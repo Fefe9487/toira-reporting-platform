@@ -1,0 +1,19 @@
+# 本機預覽工具及輸出
+_serve.py
+_island_hits.txt
+__pycache__/
+*.pyc
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# 本機設定及憑證
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# 開發相依套件
+node_modules/

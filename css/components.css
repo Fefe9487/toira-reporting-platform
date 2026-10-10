@@ -1,0 +1,1023 @@
+/* =========================================================
+ * components.css - 系統通用元件 (按鈕、輸入框、表格、Dialog、抽屜)
+ * ========================================================= */
+    /* =========================================================
+     * 通用組件樣式 (比照 ReportWaring 的 BtnComponent, Input, Table)
+     * ========================================================= */
+    .button-group-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .search-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .search-group label,
+    .search-group span {
+      font-size: 15px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .v-input {
+      display: inline-flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .v-input:focus {
+      border-color: #0288d1;
+      box-shadow: 0 0 0 2px rgba(2, 136, 209, 0.15);
+    }
+    .v-select {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 15px;
+      outline: none;
+      cursor: pointer;
+    }
+    .v-select:focus {
+      border-color: #0288d1;
+    }
+
+    /* 操作按鈕 (比照 BtnComponent) */
+    .btn-add {
+      background-color: #15803d;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-add:hover {
+      background-color: #166534;
+    }
+
+    .btn-search {
+      background-color: #0288d1;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-search:hover {
+      background-color: #0277bd;
+    }
+
+    .btn-reset {
+      background-color: #e2e8f0;
+      color: #475569;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-reset:hover {
+      background-color: #cbd5e1;
+    }
+
+    /* 統一查詢條件區塊 (Search Filter Card) */
+    .search-filter-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 18px 20px 16px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .search-filter-fields {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px 24px;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* 響應式斷點：依螢幕解析度自動切換欄數 */
+    /* 平板及中型螢幕：一行兩欄 */
+    @media (max-width: 1200px) {
+      .search-filter-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* 小型平板及手機：一行一欄 */
+    @media (max-width: 768px) {
+      .search-filter-fields {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .search-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-width: 0;
+    }
+    .search-filter-item > label,
+    .search-filter-item > span.label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    /* 確保查詢條件內的各類輸入框、選單與自訂月曆框自適應填滿剩餘寬度 */
+    .search-filter-item > .v-input,
+    .search-filter-item > .v-select,
+    .search-filter-item > div[onclick*="openHhCalendarPopup"] {
+      flex: 1 1 0% !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box;
+    }
+    /* 查詢條件底部按鈕列：固定置中 */
+    .search-filter-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px dashed #e2e8f0;
+    }
+    .search-filter-actions .btn-search {
+      padding: 8px 26px;
+      font-size: 15px;
+      min-width: 90px;
+      justify-content: center;
+    }
+    .search-filter-actions .btn-reset {
+      padding: 8px 22px;
+      font-size: 15px;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    /* 表格內動作按鈕 (Icon Buttons) */
+    .action-btn {
+      background: none;
+      border: none;
+      padding: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .action-btn.edit {
+      color: #0288d1;
+    }
+    .action-btn.edit:hover {
+      background: #e0f2fe;
+    }
+    .action-btn.delete {
+      color: #ef4444;
+    }
+    .action-btn.delete:hover {
+      background: #fee2e2;
+    }
+    .action-btn.permission {
+      color: #f59e0b;
+    }
+    .action-btn.permission:hover {
+      background: #fef3c7;
+    }
+    .action-btn.member {
+      color: #10b981;
+    }
+    .action-btn.member:hover {
+      background: #d1fae5;
+    }
+    .action-btn.view {
+      color: #6366f1;
+    }
+    .action-btn.view:hover {
+      background: #e0e7ff;
+    }
+
+    /* 資料表格 (比照 DatatableComponent) */
+    .v-table-wrap {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .v-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15.5px;
+      text-align: left;
+    }
+    .v-table th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 13px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .v-table td {
+      padding: 13px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      font-size: 15.5px;
+      line-height: 1.6;
+      vertical-align: middle;
+    }
+    .v-table td code {
+      font-size: 14.5px;
+      font-family: monospace;
+    }
+    .v-table tr:hover {
+      background-color: #f8fafc;
+    }
+    .v-table-center {
+      text-align: center;
+    }
+
+    /* 狀態晶片標籤 (Status Badges) */
+    .badge-status, .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .badge-open, .badge-active {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .badge-closed, .badge-inactive {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+    .badge-audit {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .badge-success {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .badge-reject {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .badge-cancel {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+    .badge-info {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+
+    /* 分頁列 (Pagination Footer) */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      font-size: 15px;
+      color: #64748b;
+      background: #fafafa;
+      border-top: 1px solid #e2e8f0;
+    }
+    .pagination-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .page-btn {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14.5px;
+      font-weight: 600;
+      min-width: 32px;
+      text-align: center;
+    }
+    .page-btn.active {
+      background: #0288d1;
+      color: #ffffff;
+      border-color: #0288d1;
+    }
+
+    /* 模組/功能維護 專用雙欄樣式 (Treeview + Form) */
+    .tree-maintain-container {
+      display: flex;
+      gap: 24px;
+      min-height: 480px;
+    }
+    .tree-pane {
+      width: 320px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      background: #fafafa;
+      overflow-y: auto;
+    }
+    .form-pane {
+      flex: 1;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      background: #ffffff;
+    }
+    .tree-node-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #334155;
+      font-size: 15.5px;
+      font-weight: 500;
+      margin-bottom: 3px;
+      transition: background 0.15s;
+    }
+    .tree-node-item:hover {
+      background: #f1f5f9;
+    }
+    .tree-node-item.selected {
+      background: #e0f2fe;
+      color: #0288d1;
+      font-weight: 700;
+    }
+    .tree-subnode-item {
+      padding-left: 28px;
+    }
+
+    /* 彈窗內樹狀勾選清單 (Checktree) */
+    .checktree-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .checktree-node {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 12px 14px;
+      background: #f8fafc;
+    }
+    .checktree-node-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .checktree-children {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-left: 24px;
+    }
+    .checktree-child-item {
+      font-size: 15px;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .form-col-full {
+      grid-column: span 2;
+    }
+    .form-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-field-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .form-field-group .form-req {
+      color: #ef4444;
+    }
+
+/* =========================================================
+     * 批次作業按鈕 (Batch Action Buttons)
+     * ========================================================= */
+    .btn-batch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      font-size: 14.5px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+      color: #ffffff;
+    }
+    .btn-batch:hover,
+    .btn-batch:active {
+      color: #ffffff;
+    }
+    .btn-batch:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.1);
+    }
+    .btn-batch:active {
+      transform: translateY(0);
+    }
+    .btn-batch-approve {
+      background-color: #15803d;
+      color: #ffffff;
+    }
+    .btn-batch-approve:hover {
+      background-color: #166534;
+    }
+    .btn-batch-reject {
+      background-color: #dc2626;
+      color: #ffffff;
+    }
+    .btn-batch-reject:hover {
+      background-color: #b91c1c;
+    }
+    .btn-batch:disabled {
+      background-color: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* =========================================================
+     * 系統管理通用 EditorDialog (Vue EditorDialog.vue 規格)
+     * ========================================================= */
+    .v-dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .v-dialog-overlay.active {
+      display: flex;
+    }
+    .v-dialog-card {
+      background: #ffffff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 780px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      overflow: hidden;
+      animation: dialogPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      font-size: 15px;
+    }
+    @keyframes dialogPop {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .v-dialog-card.v-dialog-shake, .modal-dialog.v-dialog-shake {
+      animation: vDialogShake 0.35s ease-in-out;
+    }
+    @keyframes vDialogShake {
+      0%, 100% { transform: scale(1) translateX(0); }
+      20%, 60% { transform: scale(1.01) translateX(-6px); }
+      40%, 80% { transform: scale(1.01) translateX(6px); }
+    }
+    .v-dialog-header {
+      padding: 18px 26px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+    }
+    .v-dialog-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .v-dialog-close {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 24px;
+      padding: 6px;
+      border-radius: 6px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .v-dialog-close:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .v-dialog-body {
+      padding: 26px;
+      overflow-y: auto;
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .v-dialog-footer {
+      padding: 16px 26px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+      display: flex;
+      justify-content: flex-end;
+      gap: 14px;
+    }
+    .v-dialog-footer.v-dialog-footer-hidden {
+      display: none !important;
+    }
+    .v-btn {
+      padding: 9px 24px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .v-btn-cancel {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+    }
+    .v-btn-cancel:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+    .v-btn-primary {
+      background: #0288d1;
+      border: 1px solid #0288d1;
+      color: #ffffff;
+    }
+    .v-btn-primary:hover {
+      background: #0277bd;
+    }
+
+    /* =========================================================
+     * 新增 / 編輯畫面標準規範 (嚴格限縮於 Dialog 與 FormPane)
+     * 1. 欄位排版名稱和值在同一行
+     * 2. 一行只有一項
+     * 3. 文字全面放大優化 (標籤 15.5px, 輸入值 15px)
+     * ========================================================= */
+    .v-dialog-card .form-grid,
+    .v-dialog-body .form-grid,
+    .form-pane .form-grid,
+    .form-page-card .form-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .v-dialog-card form,
+    .v-dialog-body form,
+    .form-page-card form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .v-dialog-card .form-field-group,
+    .v-dialog-body .form-field-group,
+    .form-pane .form-field-group,
+    .form-page-card .form-field-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 0;
+      width: 100%;
+    }
+    .v-dialog-card .form-field-group > label,
+    .v-dialog-body .form-field-group > label,
+    .form-pane .form-field-group > label,
+    .form-page-card .form-field-group > label {
+      width: 175px;
+      min-width: 175px;
+      max-width: 175px;
+      text-align: right;
+      margin-bottom: 0;
+      font-size: 15.5px !important;
+      font-weight: 600;
+      color: #1e293b;
+      flex-shrink: 0;
+      line-height: 1.45;
+    }
+    .v-dialog-card .form-field-group > input,
+    .v-dialog-card .form-field-group > select,
+    .v-dialog-card .form-field-group > textarea,
+    .v-dialog-card .form-field-group > div:not(.sub-items-container):not(.dispatch-tip),
+    .v-dialog-body .form-field-group > input,
+    .v-dialog-body .form-field-group > select,
+    .v-dialog-body .form-field-group > textarea,
+    .v-dialog-body .form-field-group > div:not(.sub-items-container):not(.dispatch-tip),
+    .form-pane .form-field-group > input,
+    .form-pane .form-field-group > select,
+    .form-pane .form-field-group > textarea,
+    .form-page-card .form-field-group > input,
+    .form-page-card .form-field-group > select,
+    .form-page-card .form-field-group > textarea,
+    .form-page-card .form-field-group > div:not(.sub-items-container):not(.dispatch-tip) {
+      flex: 1;
+      width: 100%;
+      font-size: 15px !important;
+    }
+    .v-dialog-card input,
+    .v-dialog-card select,
+    .v-dialog-card textarea,
+    .v-dialog-body input,
+    .v-dialog-body select,
+    .v-dialog-body textarea,
+    .form-page-card input,
+    .form-page-card select,
+    .form-page-card textarea {
+      font-size: 15px !important;
+      padding: 8px 12px;
+    }
+    .v-dialog-card .form-field-group:has(textarea),
+    .v-dialog-body .form-field-group:has(textarea),
+    .form-pane .form-field-group:has(textarea),
+    .form-page-card .form-field-group:has(textarea) {
+      align-items: flex-start;
+    }
+    .v-dialog-card .form-field-group textarea,
+    .v-dialog-body .form-field-group textarea,
+    .form-pane .form-field-group textarea,
+    .form-page-card .form-field-group textarea {
+      margin-top: 3px;
+    }
+    .v-dialog-card .form-field-group div label,
+    .v-dialog-body .form-field-group div label,
+    .form-pane .form-field-group div label,
+    .form-page-card .form-field-group div label {
+      width: auto;
+      min-width: 0;
+      max-width: none;
+      text-align: left;
+      font-weight: normal;
+      font-size: 15px !important;
+      color: #334155;
+    }
+    .v-dialog-card .v-table th,
+    .v-dialog-body .v-table th {
+      font-size: 16px !important;
+      padding: 12px 16px;
+    }
+    .v-dialog-card .v-table td,
+    .v-dialog-body .v-table td {
+      font-size: 15.5px !important;
+      padding: 12px 16px;
+      line-height: 1.6;
+    }
+    .v-dialog-card button,
+    .v-dialog-body button {
+      font-size: 15px !important;
+    }
+
+    /* =========================================================
+     * 側邊搜尋抽屜 (SearchBar.vue 規格)
+     * ========================================================= */
+    .search-bar-mask {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 9998;
+      display: none;
+    }
+    .search-bar-mask.active {
+      display: block;
+    }
+    .search-bar-drawer {
+      position: fixed;
+      top: 0;
+      right: -380px;
+      width: 360px;
+      height: 100vh;
+      background: #ffffff;
+      box-shadow: -4px 0 15px rgba(0,0,0,0.12);
+      z-index: 9999;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .search-bar-drawer.active {
+      right: 0;
+    }
+    .search-drawer-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+    }
+    .search-drawer-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .search-drawer-body {
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .search-drawer-footer {
+      padding: 14px 20px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* =========================================================
+     * API CRUD 功能權限矩陣設定 (Role API Permission Matrix)
+     * ========================================================= */
+    .perm-matrix-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+    .perm-matrix-header-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .perm-role-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .perm-role-badge {
+      background: #0288d1;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .perm-role-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .perm-quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .perm-search-box {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .perm-search-box input {
+      padding: 6px 12px 6px 32px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 220px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .perm-search-box input:focus {
+      border-color: #0288d1;
+      box-shadow: 0 0 0 2px rgba(2, 136, 209, 0.15);
+    }
+    .perm-search-box svg {
+      position: absolute;
+      left: 10px;
+      color: #94a3b8;
+    }
+    .perm-preset-select {
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #334155;
+      background: #ffffff;
+      outline: none;
+      cursor: pointer;
+    }
+    .perm-matrix-table-wrap {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      overflow-x: auto;
+      max-height: 480px;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .perm-matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14.5px;
+      text-align: left;
+    }
+    .perm-matrix-table thead th {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 2px solid #cbd5e1;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .perm-matrix-table th.center,
+    .perm-matrix-table td.center {
+      text-align: center;
+    }
+    .perm-matrix-module-row td {
+      background: #f8fafc;
+      font-weight: 700;
+      color: #0369a1;
+      border-top: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 10px 14px;
+    }
+    .perm-matrix-module-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .perm-matrix-func-row:hover {
+      background: #f8fafc;
+    }
+    .perm-matrix-func-row td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      vertical-align: middle;
+    }
+    .perm-func-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-left: 22px;
+    }
+    .perm-func-title {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 14.5px;
+    }
+    .perm-func-endpoint {
+      font-size: 12px;
+      color: #64748b;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+    .perm-badge-c {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .perm-badge-r {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .perm-badge-u {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .perm-badge-d {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .perm-na-text {
+      color: #94a3b8;
+      font-size: 12px;
+      font-style: italic;
+    }
+    .perm-custom-checkbox {
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+      accent-color: #0288d1;
+      vertical-align: middle;
+    }
+    .perm-matrix-tip-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 13px;
+      color: #64748b;
+      padding: 4px 4px;
+    }
+
+

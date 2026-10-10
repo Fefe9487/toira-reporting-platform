@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>TOiRA 危險作業風險評估及通報平台 - 帳號登入</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/report_flow.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-page">
+
+  <!-- 無障礙跳至主要內容 -->
+  <a href="#main-content" id="gotocenter" title="跳到主要內容" accesskey="C" class="sr-only sr-only-focusable">跳到主要內容 (Alt + C)</a>
+
+  <!-- 登入頁面視圖 (Login View) -->
+  <div id="loginView" style="display: flex; flex-direction: column; min-height: 100vh;">
+    <header class="portal-header">
+      <a class="portal-brand" href="login.html"><img src="assets/images/sha_logo.png" alt="勞動部職業安全衛生署"><span><small>勞動部職業安全衛生署</small><strong>TOiRA 危險作業風險評估及通報平台</strong></span></a>
+      <div class="portal-header-links"><a href="https://www.osha.gov.tw/" target="_blank" rel="noopener noreferrer">職安署首頁<span class="sr-only">（另開新分頁）</span></a><a href="#quick-links">快速連結</a></div>
+    </header>
+    <nav class="portal-nav" aria-label="首頁導覽"><div><a href="#why-assessment">通報說明</a><a href="#legal-basis">法規依據</a><a href="#report-process">辦理流程</a><a href="#quick-links">快速連結</a><a href="faq.html">常見問答</a><a class="portal-login-anchor" href="#loginUsername">登入平台</a></div></nav>
+    <main id="main-content" class="portal-main">
+      <div class="portal-entry-grid">
+        <section class="risk-intro" id="why-assessment" aria-labelledby="riskIntroTitle">
+          <h1 class="portal-section-title" id="riskIntroTitle">危險作業通報說明</h1>
+          <h2 class="risk-intro-subtitle">作業前風險評估的重要性</h2>
+          <p class="portal-lead">危險作業可能造成墜落、倒塌、火災、爆炸、缺氧或中毒等災害。作業前應依現場條件辨識危害、評估風險，並確認防護措施足以保障作業人員安全。</p>
+          <figure class="risk-intro-figure"><img class="risk-before-work-image" src="assets/images/risk-before-work-image2.png" alt="現場主管與安全人員於屋頂作業前檢視風險評估，確認開口防護、護欄及個人防墜措施。"><figcaption>作業前共同確認危害與防護措施，避免事故發生。</figcaption></figure>
+          <div class="risk-intro-note"><strong>請先完成風險評估，再辦理危險作業通報。</strong><p>可自行上傳風險評估資料，或使用 TOiRA 線上工具完成評估。</p></div>
+        </section>
+      <div class="auth-container">
+        <div class="card-brand-header"><h2>會員登入</h2><p>登入後辦理危險作業風險評估及通報。</p></div>
+
+        <!-- 頁籤導覽：僅保留「帳號登入」與「事業單位證號」 -->
+        <div class="tab-header" role="tablist" aria-label="選擇登入方式">
+          <button class="tab-btn active" role="tab" aria-selected="true" id="tab-login" aria-controls="panel-login" tabindex="0" onclick="switchTab('login')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            帳號登入
+          </button>
+          <button class="tab-btn" role="tab" aria-selected="false" id="tab-sso" aria-controls="panel-sso" tabindex="-1" onclick="switchTab('sso')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            事業單位證號
+          </button>
+        </div>
+
+        <div class="tab-content">
+          <!-- ============================================== -->
+          <!-- 頁籤一：帳號登入                               -->
+          <!-- ============================================== -->
+          <div class="tab-panel active" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+            <form id="loginForm" onsubmit="handleAccountLogin(event)" novalidate>
+              <!-- 帳號(email) -->
+              <div class="form-group">
+                <label class="form-label" for="loginUsername">帳號(email) <span class="required">*</span></label>
+                <div class="input-box">
+                  <input type="text" id="loginUsername" class="form-control" placeholder="請輸入帳號或電子信箱(email)" autocomplete="username" required>
+                </div>
+                <div class="invalid-feedback" id="login-user-feedback">請輸入帳號(email)</div>
+              </div>
+
+              <!-- 登入密碼 (右側放置「忘記密碼？」) -->
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="loginPassword">密碼 <span class="required">*</span></label>
+                  <a href="javascript:showForgotPasswordModal();" class="forgot-link">忘記密碼？</a>
+                </div>
+                <div class="input-box">
+                  <input type="password" id="loginPassword" class="form-control" placeholder="請輸入密碼" autocomplete="current-password" required style="padding-right: 46px;">
+                  <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword', 'pwd-eye-icon1')" aria-label="切換密碼顯示">
+                    <span id="pwd-eye-icon1" class="eye-icon-wrapper">
+                      <!-- 預設密碼隱藏圖示 (斜線眼睛) -->
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+                <div class="invalid-feedback" id="login-pwd-feedback">請輸入密碼</div>
+              </div>
+
+              <!-- 圖形驗證碼 (換一張改用圖形按鈕) -->
+              <div class="form-group">
+                <label class="form-label" for="loginCaptcha">圖形驗證碼 <span class="required">*</span></label>
+                <div class="captcha-row">
+                  <input type="text" id="loginCaptcha" class="form-control" placeholder="4 位數" maxlength="4" autocomplete="off" required style="width: 140px;">
+                  <div class="captcha-canvas-wrap" onclick="refreshCaptcha('canvasLogin')" title="點擊換一張">
+                    <canvas id="canvasLogin" width="120" height="42" aria-label="圖形驗證碼"></canvas>
+                  </div>
+                  <!-- 換一張圖形按鈕 -->
+                  <button type="button" class="btn-refresh-icon" onclick="refreshCaptcha('canvasLogin')" title="換一張驗證碼" aria-label="換一張驗證碼">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M23 4v6h-6"></path>
+                      <path d="M1 20v-6h6"></path>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="invalid-feedback" id="login-captcha-feedback">請輸入正確的圖形驗證碼</div>
+              </div>
+
+              <!-- 確認登入按鈕 -->
+              <button type="submit" class="btn-submit" id="btn-login-submit">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                登入平台
+              </button>
+            </form>
+
+            <div class="register-prompt">
+              尚未擁有平台帳號？
+              <button type="button" class="btn-register-link" onclick="openRegisterModal()">立即註冊帳號 &raquo;</button>
+            </div>
+
+            <!-- 快捷視角預覽按鈕 -->
+            <div style="text-align: center; margin-top: 14px;">
+              <button type="button" class="preview-dashboard" onclick="showDashboardView('inspection')">展示預覽：登入後平台畫面 →</button>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- 頁籤二：事業單位證號登入 (OSHA One4All SSO)     -->
+          <!-- ============================================== -->
+          <div class="tab-panel" id="panel-sso" role="tabpanel" aria-labelledby="tab-sso">
+            <div style="padding: 24px 0 16px;">
+              <button type="button" class="btn-sso" onclick="simulateOshaSso()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                事業單位證號登入
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      <section class="assessment-reasons" aria-labelledby="assessmentReasonsTitle">
+        <div class="section-heading"><h2 class="portal-section-title" id="assessmentReasonsTitle">風險評估目的</h2></div>
+        <div class="reason-columns">
+          <article><img class="portal-info-icon" src="assets/images/home-icon-identify.png" width="72" height="72" alt="" loading="lazy"><div><h3>辨識作業危害</h3><p>依作業內容、方法與環境，辨識可能造成傷害的原因，以及受到影響的人員。</p></div></article>
+          <article><img class="portal-info-icon" src="assets/images/home-icon-protect.png" width="72" height="72" alt="" loading="lazy"><div><h3>採取預防措施</h3><p>確認現有防護是否足夠，評估需改善的設備、作業方式與管理措施。</p></div></article>
+          <article><img class="portal-info-icon" src="assets/images/home-icon-review.png" width="72" height="72" alt="" loading="lazy"><div><h3>持續檢視風險</h3><p>將危害與措施告知相關人員；作業中持續確認成效，條件變更時重新評估。</p></div></article>
+        </div>
+      </section>
+      <section class="portal-law-section" id="legal-basis" aria-labelledby="legalBasisTitle">
+        <div class="legal-heading"><h2 class="portal-section-title" id="legalBasisTitle">法規依據</h2><h3>職業安全衛生設施規則<br>第 21 條之 3</h3><a href="https://laws.mol.gov.tw/FLAW/FLAWDOC01.aspx?flno=21-3&amp;id=FL015021" target="_blank" rel="noopener noreferrer">查看完整法規 ↗<span class="sr-only">（另開新分頁）</span></a><small>民國 115 年 6 月 30 日修正<br>本條自民國 116 年 1 月 1 日施行</small></div>
+        <div class="legal-body"><h3>作業前評估與防護，並依規定辦理通報</h3><p>雇主使勞工從事本條所列危險作業前，應依公告內容及方式評估風險、採取預防措施，並保存相關紀錄或文件三年。符合公告通報條件者，應於作業前辦理通報。</p><div class="legal-steps"><span>作業前實施風險評估</span><span>落實必要的預防措施</span><span>符合條件時辦理通報</span><span>紀錄或文件留存三年</span></div><p class="legal-note">評估內容可參考「危險作業風險評估及通報注意事項」與風險評估指引。作業內容、方式或現場條件變更而影響評估結果時，應重新評估並修正措施。</p><a class="guidance-download" href="assets/documents/危險作業線上風險評估及通報注意事項1151008.docx" download>下載危險作業風險評估及通報注意事項（1151008 參考文件） ↓</a></div>
+      </section>
+      <section class="portal-process" id="report-process" aria-labelledby="reportProcessTitle">
+        <div class="section-heading"><h2 class="portal-section-title" id="reportProcessTitle">辦理流程</h2></div>
+        <ol class="portal-process-list"><li><img class="portal-process-icon" src="assets/images/home-icon-identify.png" width="52" height="52" alt="" loading="lazy"><div><span class="portal-process-step-label">步驟 1</span><h3>作業／填報者資訊</h3><p>填寫通報者、作業地點、施作單位與管轄機構。</p></div></li><li><img class="portal-process-icon" src="assets/images/home-icon-protect.png" width="52" height="52" alt="" loading="lazy"><div><span class="portal-process-step-label">步驟 2</span><h3>選擇通報作業</h3><p>設定作業名稱與期間，選擇涉及的危險作業。</p></div></li><li><img class="portal-process-icon" src="assets/images/home-icon-identify.png" width="52" height="52" alt="" loading="lazy"><div><span class="portal-process-step-label">步驟 3</span><h3>實施風險評估</h3><p>自行上傳評估資料，或前往 TOiRA 完成評估。</p></div></li><li><img class="portal-process-icon" src="assets/images/home-icon-review.png" width="52" height="52" alt="" loading="lazy"><div><span class="portal-process-step-label">步驟 4</span><h3>資料確認通報</h3><p>核對作業、評估結果與附件後完成通報。</p></div></li></ol>
+        <p class="process-reminder">同一地點、同一期間涉及多項危險作業時，請於同一案件通報，並就各項作業分別評估風險及訂定預防措施。</p>
+      </section>
+      <section class="portal-quick-links" id="quick-links" aria-labelledby="quickLinksTitle">
+        <h2 class="portal-section-title" id="quickLinksTitle">快速連結</h2>
+        <div class="portal-resource-links">
+          <a data-toira-link href="https://sh168.osha.gov.tw/" target="_blank" rel="noopener noreferrer"><strong>TOiRA 線上風險評估工具 <span aria-hidden="true">↗</span></strong><span>依實際作業情境辨識危害、評估風險及規劃預防措施。完成評估後，回到本平台上傳結果。</span><span class="sr-only">（另開新分頁）</span></a>
+          <a href="assets/documents/危險作業線上風險評估及通報注意事項1151008.docx" download><strong>危險作業風險評估及通報注意事項 <span aria-hidden="true">↓</span></strong><span>下載參考文件，了解風險評估內容與通報注意事項（DOCX）。</span></a>
+          <a href="https://laws.mol.gov.tw/FLAW/FLAWDOC01.aspx?flno=21-3&amp;id=FL015021" target="_blank" rel="noopener noreferrer"><strong>職業安全衛生設施規則第 21 條之 3 <span aria-hidden="true">↗</span></strong><span>查看作業前風險評估、預防措施、通報與紀錄保存之規定。</span><span class="sr-only">（另開新分頁）</span></a>
+        </div>
+        <div class="portal-local-links"><h3>各勞動檢查機構通報入口</h3><p>所在地區勞動檢查機構若有特殊通報作業者，請至相關網站辦理</p><div id="landingOfficeLinks" class="office-links"></div><small>請依作業所在地及管轄機構選用；各入口另開新分頁。</small></div>
+      </section>
+    </main>
+
+
+  <!-- 彈窗 (Modal)：共用訊息提示、忘記密碼與註冊帳號 -->
+  <div class="modal-backdrop" id="customModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modalTitle">系統提示</h3>
+        <button type="button" class="btn-close" onclick="closeModal()" aria-label="關閉視窗">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- 內容動態注入 -->
+      </div>
+      <div class="modal-footer" id="modalFooter">
+        <button type="button" class="btn-secondary" onclick="closeModal()">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  
+    <!-- 頁尾 (Footer) - 放在 loginView 內部，切換後台時自動隱藏 -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <p><strong>勞動部職業安全衛生署</strong> 版權所有 &copy; 2026 All Rights Reserved.</p>
+        <div class="footer-meta">
+          <span>執行單位：財團法人安全衛生技術中心</span>
+          <span>服務專線：(03) 583-6885</span>
+          <span>建議使用 Chrome、Edge 或 Firefox 瀏覽器</span>
+        </div>
+      </div>
+      <div class="accessibility-badge">
+        <span>危險作業前，評估與防護先行</span>
+      </div>
+    </div>
+  </footer>
+  </div><!-- /#loginView -->
+
+  <!-- ========================================================= -->
+  <!-- 登入後系統主畫面 (Dashboard View - 依據使用者需求支援三角色) -->
+  <!-- ========================================================= -->
+  <div id="dashboardView" style="display: none;">
+    <!-- 左側導覽列 (Sidebar) -->
+    <aside class="sidebar" id="appSidebar">
+      <!-- 頂部標誌全銜 -->
+      <div class="sidebar-header">
+        <img src="assets/images/sha_logo.png" onerror="this.src='sha_logo.png'" alt="職安署Logo" class="sidebar-logo">
+        <div class="sidebar-title-group">
+          <span class="sidebar-agency">勞動部職業安全衛生署</span>
+          <span class="sidebar-system">TOiRA<br>危險作業風險評估<br>及通報平台</span>
+        </div>
+      </div>
+
+      <!-- 角色身分指示標籤 -->
+      <div class="sidebar-role-badge">
+        <span id="sidebarRoleName">管理者</span>
+        <span style="font-size:11px; opacity:0.85;" id="sidebarRoleDetail">權限模組</span>
+      </div>
+
+      <!-- 動態選單列表 (依據角色動態切換) -->
+      <ul class="sidebar-nav" id="sidebarNav">
+      <!-- 預設靜態渲染勞檢機構選單（JS 初始化後亦會動態維持） -->
+      <li class="menu-item active" onclick="selectSingleMenu(this, 'caseSearch')">
+        <a href="javascript:void(0);" class="menu-link">
+          <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span>
+          <span>通報案件查詢</span>
+        </a>
+      </li>
+      <li class="menu-item" onclick="selectSingleMenu(this, 'localMaintain')">
+        <a href="javascript:void(0);" class="menu-link">
+          <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+          <span>地方通報網站維護</span>
+        </a>
+      </li>
+      <li class="menu-item" onclick="selectSingleMenu(this, 'workplaceMaintain')">
+        <a href="javascript:void(0);" class="menu-link">
+          <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>
+          <span>危評維護</span>
+        </a>
+      </li>
+      </ul>
+    </aside>
+
+    <!-- 右側主工作區塊 -->
+    <div class="main-container">
+      <!-- 頂部導覽工具列 -->
+      <header class="top-app-bar">
+        <div class="top-left-group">
+          <!-- 漢堡圖示 (切換側邊欄展開/收合) -->
+          <button type="button" class="btn-toggle-menu" onclick="toggleSidebar()" title="切換選單" aria-label="切換選單">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+
+          <!-- 角色預覽切換器 -->
+          <div class="role-switcher-wrap">
+            <span class="role-switcher-label">預覽角色：</span>
+            <select id="roleSelector" class="role-select" onchange="setSystemRole(this.value)">
+              <option value="inspection" selected>🏛️ 勞檢機構</option>
+              <option value="admin">⚙️ 管理者</option>
+              <option value="company">🏢 事業單位</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 右側身分與按鈕 -->
+        <div class="top-user-group">
+          <a class="dashboard-qa-link" href="faq.html" target="_blank" rel="noopener noreferrer">常見問答<span class="sr-only">（另開新分頁）</span></a>
+          <!-- 逾時倒數與身分卡 -->
+          <div class="session-status-card">
+            <div class="session-user" id="topUserDisplay">系統管理員</div>
+            <div class="session-timer">距逾時限制 : <span id="clockCountdown">14:17</span></div>
+          </div>
+
+          <!-- 個人資料按鈕 (事業單位與勞檢機構進入個人帳號維護) -->
+          <button type="button" class="btn-profile" onclick="handleProfileClick()" title="個人帳號資料維護">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            個人資料
+          </button>
+
+          <!-- 登出按鈕 (粉紅/洋紅膠囊) -->
+          <button type="button" class="btn-logout" onclick="showLoginView()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            登出
+          </button>
+        </div>
+      </header>
+
+      <!-- 右側主工作區塊 (功能畫面容器) -->
+      <main class="dashboard-content-area">
+        <div class="workspace-card" id="mainWorkspaceCard">
+          <!-- 內容由 JS 依當前點選之選單動態渲染對應功能畫面 -->
+        </div>
+      </main>
+    </div>
+  </div>
+
+
+  <!-- =========================================================
+   * 系統管理通用 EditorDialog (比照 Vue EditorDialog.vue)
+   * ========================================================= -->
+  <div id="vDialogOverlay" class="v-dialog-overlay" onclick="handleDialogOverlayClick(event)">
+    <div id="vDialogCard" class="v-dialog-card" role="dialog" aria-modal="true" aria-labelledby="vDialogTitle" tabindex="-1" onclick="event.stopPropagation()">
+      <div class="v-dialog-header">
+        <div class="v-dialog-title" id="vDialogTitle">
+          對話框標題 <span id="vDialogTitleMsg"></span>
+        </div>
+        <button type="button" class="v-dialog-close" onclick="closeVDialog()" title="關閉">✕</button>
+      </div>
+      <div class="v-dialog-body" id="vDialogBody">
+        <!-- 動態注入各模組表單內容 -->
+      </div>
+      <div class="v-dialog-footer">
+        <button type="button" class="v-btn v-btn-cancel" onclick="closeVDialog()" style="padding:9px 22px; font-size: 14px; font-weight:600; border-radius:6px; cursor:pointer; background:#fff; border:1px solid #cbd5e1; color:#475569;">
+          取消
+        </button>
+        <button type="button" class="btn-add" id="vDialogSubmitBtn" onclick="submitVDialog()" style="background:#16a34a; padding:9px 24px; font-size: 14px; font-weight:700; border-radius:6px; border:none; color:#fff; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="vDialogSubmitText">確定</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- 核心資料與共用模組 -->
+  <script src="js/data/geo_data.js"></script>
+  <script src="js/data/portal_config.js"></script>
+  <script src="js/data/menu_config.js"></script>
+  <script src="js/components/calendar_picker.js"></script>
+  <script src="js/components/dialog.js"></script>
+  <script src="js/modules/auth.js"></script>
+  <script src="js/modules/case_search.js"></script>
+  <script src="js/modules/system_admin.js"></script>
+  <script src="js/modules/dangerous_report.js"></script>
+  <script src="js/data/toira_work_catalog.js"></script>
+  <script src="js/modules/risk_assessment.js"></script>
+  <script src="js/modules/construction_report.js"></script>
+  <script src="js/modules/dashboard_views.js"></script>
+  <script src="js/modules/navigation.js"></script>
+</body>
+</html>

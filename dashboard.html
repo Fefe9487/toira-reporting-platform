@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>TOiRA 危險作業風險評估及通報平台 - 平台主頁</title>
+  <!-- 模組化樣式引入 (解耦自大單體 CSS) -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/report_flow.css">
+</head>
+<body class="dashboard-page">
+
+  <!-- 左側選單 (Sidebar) -->
+  <aside class="sidebar" id="appSidebar">
+    <!-- 頂部標誌全銜 -->
+    <div class="sidebar-header">
+      <img src="assets/images/sha_logo.png" onerror="this.src='sha_logo.png'" alt="職安署Logo" class="sidebar-logo">
+      <div class="sidebar-title-group">
+        <span class="sidebar-agency">勞動部職業安全衛生署</span>
+        <span class="sidebar-system">TOiRA<br>危險作業風險評估<br>及通報平台</span>
+      </div>
+    </div>
+
+    <!-- 角色身分指示標籤 -->
+    <div class="sidebar-role-badge">
+      <span id="sidebarRoleName">管理者</span>
+      <span style="font-size:11px; opacity:0.85;" id="sidebarRoleDetail">系統全權管理人員</span>
+    </div>
+
+    <!-- 動態選單列表 (依角色切換) -->
+    <ul class="sidebar-nav" id="sidebarNav">
+      <!-- 預設靜態渲染勞檢機構選單（JS 初始化後亦會動態維持） -->
+      <li class="menu-item active" onclick="selectSingleMenu(this, 'caseSearch')">
+        <a href="javascript:void(0);" class="menu-link">
+          <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span>
+          <span>通報案件查詢</span>
+        </a>
+      </li>
+      <li class="menu-item" onclick="selectSingleMenu(this, 'localMaintain')">
+        <a href="javascript:void(0);" class="menu-link">
+          <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+          <span>地方通報網站維護</span>
+        </a>
+      </li>
+      <li class="menu-item" onclick="selectSingleMenu(this, 'workplaceMaintain')">
+        <a href="javascript:void(0);" class="menu-link">
+          <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>
+          <span>危評維護</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- 右側主要容器 -->
+  <div class="main-container">
+    <!-- 頂部工具列 -->
+    <header class="top-app-bar">
+      <div class="top-left-group">
+        <!-- 漢堡圖示 (展開/收合選單) -->
+        <button type="button" class="btn-toggle-menu" onclick="toggleSidebar()" title="切換選單" aria-label="切換選單">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- 角色預覽切換器 -->
+        <div class="role-switcher-wrap">
+          <span class="role-switcher-label">預覽角色：</span>
+          <select id="roleSelector" class="role-select" onchange="setSystemRole(this.value)">
+            <option value="inspection" selected>🏛️ 勞檢機構</option>
+            <option value="admin">⚙️ 管理者</option>
+            <option value="company">🏢 事業單位</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 右側使用者身分與按鈕 -->
+      <div class="top-user-group">
+          <a class="dashboard-qa-link" href="faq.html" target="_blank" rel="noopener noreferrer">常見問答<span class="sr-only">（另開新分頁）</span></a>
+        <!-- 逾時倒數與身分卡 -->
+        <div class="session-status-card">
+          <div class="session-user" id="topUserDisplay">系統管理員</div>
+          <div class="session-timer">距逾時限制 : <span id="clockCountdown">14:17</span></div>
+        </div>
+
+        <!-- 個人資料按鈕 (事業單位與勞檢機構進入個人帳號維護) -->
+        <button type="button" class="btn-profile" onclick="handleProfileClick()" title="個人帳號資料維護">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          個人資料
+        </button>
+
+        <!-- 登出按鈕 -->
+        <button type="button" class="btn-logout" onclick="window.location.href='login.html'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          登出
+        </button>
+      </div>
+    </header>
+
+    <!-- 右側內容區塊 (比照 ReportWaring Vue 功能畫面實裝) -->
+    <main class="content-area">
+      <div class="workspace-card" id="mainWorkspaceCard">
+        <!-- 內容由 JS 依當前點選之選單動態渲染對應功能畫面 -->
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================
+   * 系統管理通用 EditorDialog (比照 Vue EditorDialog.vue)
+   * ========================================================= -->
+  <div id="vDialogOverlay" class="v-dialog-overlay" onclick="handleDialogOverlayClick(event)">
+    <div id="vDialogCard" class="v-dialog-card" role="dialog" aria-modal="true" aria-labelledby="vDialogTitle" tabindex="-1" onclick="event.stopPropagation()">
+      <div class="v-dialog-header">
+        <div class="v-dialog-title" id="vDialogTitle">
+          對話框標題 <span id="vDialogTitleMsg"></span>
+        </div>
+        <button type="button" class="v-dialog-close" onclick="closeVDialog()" title="關閉">✕</button>
+      </div>
+      <div class="v-dialog-body" id="vDialogBody">
+        <!-- 動態注入各模組表單內容 -->
+      </div>
+      <div class="v-dialog-footer">
+        <button type="button" class="v-btn v-btn-cancel" onclick="closeVDialog()" style="padding:9px 22px; font-size: 14px; font-weight:600; border-radius:6px; cursor:pointer; background:#fff; border:1px solid #cbd5e1; color:#475569;">
+          取消
+        </button>
+        <button type="button" class="btn-add" id="vDialogSubmitBtn" onclick="submitVDialog()" style="background:#16a34a; padding:9px 24px; font-size: 14px; font-weight:700; border-radius:6px; border:none; color:#fff; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="vDialogSubmitText">確定</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- 核心資料與共用模組 -->
+  <script src="js/data/geo_data.js"></script>
+  <script src="js/data/portal_config.js"></script>
+  <script src="js/data/menu_config.js"></script>
+  <script src="js/components/calendar_picker.js"></script>
+  <script src="js/components/dialog.js"></script>
+  <script src="js/modules/auth.js"></script>
+  <script src="js/modules/case_search.js"></script>
+  <script src="js/modules/system_admin.js"></script>
+  <script src="js/modules/dangerous_report.js"></script>
+  <script src="js/data/toira_work_catalog.js"></script>
+  <script src="js/modules/risk_assessment.js"></script>
+  <script src="js/modules/construction_report.js"></script>
+  <script src="js/modules/dashboard_views.js"></script>
+  <script src="js/modules/navigation.js"></script>
+</body>
+</html>
