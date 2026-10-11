@@ -336,22 +336,22 @@
     }
 
     /* -------------------------------------------------------------
-     * 6. 事業單位證號登入模擬 (OSHA SSO)
+     * 6. 單一帳號登入展示 (OSHA SSO)
      * ------------------------------------------------------------- */
     function simulateOshaSso() {
       openModal(
-        "🏢 職安署 One4All SSO 登入模擬",
-        `<p style="margin-bottom:14px; color:#475569;">事業單位<strong>免註冊帳號</strong>，請輸入統編體驗 Just-In-Time 自動開通機制：</p>
+        "單一帳號登入｜展示預覽",
+        `<p style="margin-bottom:14px; color:#475569;">正式使用時，須先取得職安署 One4All 事業單位單一帳號，並於官方登入頁完成身分驗證。以下資料僅供展示登入後畫面，不會建立或驗證正式帳號。</p>
          <div style="margin-bottom:14px;">
            <label style="display:block; font-size: 13px; font-weight:600; margin-bottom:4px;">事業單位統一編號 (8 碼)：</label>
            <input type="text" id="mock-idn" value="16541333" class="form-control" maxlength="8">
          </div>
          <div style="margin-bottom:18px;">
            <label style="display:block; font-size: 13px; font-weight:600; margin-bottom:4px;">事業單位名稱：</label>
-           <input type="text" id="mock-cname" value="凌網科技股份有限公司" class="form-control">
+           <input type="text" id="mock-cname" value="展示用事業單位" class="form-control">
          </div>
          <button type="button" class="btn-sso" onclick="executeMockSsoCallback()" style="font-size: 12.5px; padding:11px;">
-           模擬職安署 SSO 授權返回
+           預覽登入後畫面
          </button>`
       );
     }

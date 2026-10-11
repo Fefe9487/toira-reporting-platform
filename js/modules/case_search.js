@@ -9,7 +9,7 @@
     var inspectionCaseCatalog = [
       { id: 'RW-115-09001', company: '台灣營造工程股份有限公司', unit: '遠東基礎工程股份有限公司', workName: '捷運環狀線地下段連續壁開挖作業', region: '新北市板橋區', workRange: '115/09/10 ~ 115/09/25', submitDate: '115/09/01', status: '待確認', scale: false },
       { id: 'RW-115-09002', company: '宏達重工實業股份有限公司', unit: '日勝吊裝工程行', workName: '高鐵特區商辦外牆帷幕高空吊裝作業', region: '台中市西屯區', workRange: '115/09/15 ~ 115/09/18', submitDate: '115/09/02', status: '已備查', scale: false },
-      { id: 'RW-115-09003', company: '長茂化學工業股份有限公司', unit: '國統環保清潔工程行', workName: '化學儲槽局限空間內部清掃作業', region: '高雄市小港區', workRange: '115/09/20 ~ 115/09/22', submitDate: '115/09/03', status: '退回', scale: false },
+      { id: 'RW-115-09003', company: '長茂化學工業股份有限公司', unit: '國統環保清潔工程行', workName: '化學儲槽局限空間內部清掃作業', region: '高雄市小港區', workRange: '115/09/20 ~ 115/09/22', submitDate: '115/09/03', status: '待確認', scale: false },
       { id: 'RW-115-09004', company: '明通精密電子股份有限公司', unit: '大發鋼構起重行', workName: '既有廠房鋼構屋頂太陽能板拆卸作業', region: '桃園市龜山區', workRange: '115/09/05 ~ 115/09/10', submitDate: '115/08/28', status: '取消', scale: false },
       { id: 'SC-115-09005', company: '富邦建設股份有限公司', unit: '大陸工程股份有限公司', workName: '大安區復興段集合住宅新建工程', region: '台北市大安區', workRange: '115/09/25 ~ 116/03/31', submitDate: '115/09/05', status: '待確認', scale: true },
       { id: 'RW-115-09006', company: '台灣營造工程股份有限公司', unit: '日勝吊裝工程行', workName: '板橋文化路外牆吊掛塗裝作業', region: '新北市板橋區', workRange: '115/09/12 ~ 115/09/20', submitDate: '115/09/06', status: '待確認', scale: false },
@@ -28,7 +28,6 @@
       const cls = {
         '待確認': 'badge-audit',
         '已備查': 'badge-open',
-        '退回': 'badge-reject',
         '取消': 'badge-cancel'
       }[status] || 'badge-audit';
       return `<span class="badge-status ${cls}">${escCaseText(status)}</span>`;
@@ -87,7 +86,7 @@
             <span>${modeLabel}：${escCaseText(meta.key)}</span>
             <span style="color:#64748b; font-weight:normal;">共 ${meta.ids.length} 筆${pendingCount ? `（待確認 ${pendingCount}）` : ''}</span>
             <span class="merge-group-actions">
-              <button type="button" class="btn-batch btn-batch-approve" ${pendingCount ? '' : 'disabled'} onclick="event.stopPropagation(); confirmMergeGroup('${gid}')">整組備查</button>
+              <button type="button" class="btn-batch btn-batch-approve" ${pendingCount ? '' : 'disabled'} onclick="event.stopPropagation(); confirmMergeGroup('${gid}')">整組標記已閱讀</button>
             </span>
           </div>
           <div class="merge-group-body">${children}</div>
@@ -98,7 +97,7 @@
         <div class="merge-toolbar">
           <button type="button" class="btn-batch" style="background:#334155; color:#ffffff;" onclick="selectAllMergePending(true)">勾選全部待確認</button>
           <button type="button" class="btn-batch" style="background:#64748b; color:#ffffff;" onclick="selectAllMergePending(false)">取消勾選</button>
-          <button type="button" class="btn-batch btn-batch-approve" onclick="handleBatchAudit('備查')">批次備查勾選案件</button>
+          <button type="button" class="btn-batch btn-batch-approve" onclick="handleBatchAudit('備查')">批次標記勾選案件已閱讀</button>
         </div>
         ${body}
       </div>`;
@@ -111,12 +110,23 @@
       return document.querySelectorAll('.case-checkbox:checked');
     }
 
+    function markInspectionCaseRead(caseNo) {
+      if (window.currentRole !== 'inspection') return false;
+      const row = inspectionCaseCatalog.find(item => item.id === caseNo);
+      const detail = window.DEMO_HAZARD_CASES && window.DEMO_HAZARD_CASES[caseNo];
+      const status = row ? row.status : detail && detail.status;
+      if (status !== '待確認') return false;
+      applyInspectionCaseStatus([caseNo], '已備查');
+      return true;
+    }
+
     function applyInspectionCaseStatus(ids, status) {
       ids.forEach(id => {
         const row = inspectionCaseCatalog.find(item => item.id === id);
-        if (row) row.status = status;
+        if (row) { row.status = status; if (status === '已備查') row.readAt = new Date().toISOString(); }
         if (window.DEMO_HAZARD_CASES && window.DEMO_HAZARD_CASES[id]) {
           window.DEMO_HAZARD_CASES[id].status = status;
+          if (status === '已備查') window.DEMO_HAZARD_CASES[id].readAt = new Date().toISOString();
         }
       });
     }
@@ -148,7 +158,7 @@
 
       // 頂部按鈕列：
       // - 事業單位: [新增危險作業通報, 新增一定規模作業通報]
-      // - 勞檢機構: [批次備查, 批次退回] 與自動彙總
+      // - 勞檢機構: [批次標記已閱讀] 與自動彙總
       // - 管理者:   自動彙總，無批次審核按鈕
       let topButtonsHtml = '';
       if (isCompany) {
@@ -172,11 +182,7 @@
             <div style="display:flex; gap:10px; align-items:center;">
               <button class="btn-batch btn-batch-approve" onclick="handleBatchAudit('備查')">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                批次備查
-              </button>
-              <button class="btn-batch btn-batch-reject" onclick="handleBatchAudit('退回')">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                批次退回
+                批次標記已閱讀
               </button>
               <button class="btn-batch btn-batch-cancel" onclick="handleBatchAudit('取消')" style="background:#64748b; color:#fff; border:none; padding:7px 16px; border-radius:6px; font-weight:600; font-size: 14.5px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; transition:background 0.2s;">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
@@ -211,28 +217,28 @@
         }
         if (!st) {
           if (caseNo.includes('004')) st = '取消';
-          else if (caseNo.includes('003')) st = '退回';
+          else if (caseNo.includes('003')) st = '待確認';
           else if (caseNo.includes('002')) st = '已備查';
           else st = '待確認';
         }
-        const isViewOnly = (st === '取消' || st === '退回');
+        const isViewOnly = (st === '取消');
 
         if (isInspection) {
-          // 勞檢機構：取消和退回的案件只能檢視
+          // 勞檢機構：取消的案件只能檢視
           if (isViewOnly) {
             return `
               <button class="action-btn view" title="檢視" onclick="openHazardCaseDetail('${caseNo}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
             `;
           }
           return `
-            <button class="action-btn edit" title="編輯" onclick="openHazardCaseDetail('${caseNo}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+            <button class="action-btn view" title="閱讀通報資料" onclick="openHazardCaseDetail('${caseNo}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
           `;
         } else if (isAdmin) {
           return `
             <button class="action-btn view" title="檢視" onclick="openHazardCaseDetail('${caseNo}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
           `;
         } else {
-          // 事業單位：取消和退回的案件只能檢視
+          // 事業單位：取消的案件只能檢視
           if (isViewOnly) {
             return `
               <button class="action-btn view" title="檢視" onclick="openHazardCaseDetail('${caseNo}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
@@ -257,11 +263,11 @@
         }
         if (!st) {
           if (caseNo.includes('004')) st = '取消';
-          else if (caseNo.includes('003')) st = '退回';
+          else if (caseNo.includes('003')) st = '待確認';
           else if (caseNo.includes('002')) st = '已備查';
           else st = '待確認';
         }
-        if (st === '取消' || st === '退回') {
+        if (st === '取消') {
           return `<td style="text-align:center; color:#94a3b8;"><input type="checkbox" disabled title="已${st}案件不可再執行批次操作" style="cursor:not-allowed; opacity:0.35;"></td>`;
         }
         return `<td style="text-align:center;"><input type="checkbox" class="case-checkbox" value="${caseNo}" onchange="updateSelectedCount()" style="cursor:pointer; width:16px; height:16px;"></td>`;
@@ -279,6 +285,7 @@
         </div>
 
         ${topButtonsHtml}
+        <p style="margin:0 0 12px; color:#64748b; font-size:14px;">待確認：勞檢尚未開啟通報資料。已備查：勞檢已閱讀通報資料。</p>
 
         <!-- 查詢條件區塊: [作業日起迄, 通報日起迄, 所在地區 (縣市), 作業名稱] -->
         <div class="search-filter-card">
@@ -307,7 +314,7 @@
               <input type="hidden" id="caseRptEnd" value="">
             </div>
 
-            <!-- 案件狀態 [待確認、已備查、取消、退回] -->
+            <!-- 案件狀態：待確認、已備查、取消 -->
             <div class="search-filter-item">
               <span class="label">案件狀態：</span>
               <select class="v-select" id="caseStatusFilter" style="min-width:125px; padding:7px 12px; font-size: 15px;">
@@ -315,7 +322,6 @@
                 <option value="待確認">待確認</option>
                 <option value="已備查">已備查</option>
                 <option value="取消">取消</option>
-                <option value="退回">退回</option>
               </select>
             </div>
 
@@ -464,6 +470,7 @@
     }
 
     function handleBatchAudit(actionType) {
+      if (window.currentRole !== 'inspection' || !['備查', '取消'].includes(actionType)) return;
       const checked = getCheckedCaseBoxes();
       if (checked.length === 0) {
         alert('請先勾選欲批次【' + actionType + '】的通報案件！');
@@ -479,7 +486,7 @@
           let st = (caseData && caseData.caseNo === id) ? caseData.status : null;
           if (!st) {
             if (id.includes('004')) st = '取消';
-            else if (id.includes('003')) st = '退回';
+            else if (id.includes('003')) st = '待確認';
             else if (id.includes('002')) st = '已備查';
             else st = '待確認';
           }
@@ -490,29 +497,6 @@
 
         if (notRecorded.length > 0) {
           alert('【批次取消】限制：\n僅能針對狀態為「已備查」之案件執行取消！\n\n下列勾選案件狀態非「已備查」：\n' + notRecorded.join('\n') + '\n\n請重新勾選後再試。');
-          return;
-        }
-      }
-
-      // 批次退回：需檢查勾選案件狀態不可包含「已備查」
-      if (actionType === '退回') {
-        const recordedCases = [];
-        caseIds.forEach(id => {
-          const caseData = getHazardCaseData(id);
-          let st = (caseData && caseData.caseNo === id) ? caseData.status : null;
-          if (!st) {
-            if (id.includes('004')) st = '取消';
-            else if (id.includes('003')) st = '退回';
-            else if (id.includes('002')) st = '已備查';
-            else st = '待確認';
-          }
-          if (st === '已備查') {
-            recordedCases.push(id + ' (目前狀態：已備查)');
-          }
-        });
-
-        if (recordedCases.length > 0) {
-          alert('【批次退回】限制：\n狀態為「已備查」之案件不可再退回！\n\n下列勾選案件已完成備查：\n' + recordedCases.join('\n') + '\n\n請取消勾選已備查之案件後再試。');
           return;
         }
       }

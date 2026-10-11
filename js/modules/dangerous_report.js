@@ -321,7 +321,7 @@ let currentHhStep = 1;
       },
       'RW-115-09003': {
         caseNo: 'RW-115-09003',
-        status: '退回',
+        status: '待確認',
         notifierCompany: '台塑石化股份有限公司小港廠',
         notifierPhone: '0935-888-999',
         relation: '自行作業',
@@ -1221,6 +1221,10 @@ let currentHhStep = 1;
      */
     function openHazardCaseDetail(caseNo, defaultWorkName) {
       const data = getHazardCaseData(caseNo);
+      if (typeof markInspectionCaseRead === 'function' && markInspectionCaseRead(caseNo)) {
+        data.status = '已備查';
+        if (typeof renderView === 'function' && window.currentActiveKey === 'caseSearch') renderView('caseSearch');
+      }
       if (defaultWorkName && (!data.workName || data.workName.includes('高架橋梁'))) {
         data.workName = defaultWorkName;
       }
@@ -1231,12 +1235,10 @@ let currentHhStep = 1;
       const primaryWorkers = loc0.workers || '18';
       const primaryNote = loc0.note || '';
 
-      const caseStatus = data.status || (data.caseNo && data.caseNo.includes('002') ? '已備查' : (data.caseNo && data.caseNo.includes('003') ? '退回' : (data.caseNo && data.caseNo.includes('004') ? '取消' : '待確認')));
+      const caseStatus = data.status || (data.caseNo && data.caseNo.includes('002') ? '已備查' : (data.caseNo && data.caseNo.includes('004') ? '取消' : '待確認'));
       let statusBadge = '';
       if (caseStatus === '已備查') {
         statusBadge = '<span class="case-id-text" style="color:#059669; background:#ecfdf5; border:1px solid #a7f3d0; padding:3px 10px; border-radius:4px; font-size: 13px; font-weight:600;">✔ 已備查</span>';
-      } else if (caseStatus === '退回') {
-        statusBadge = '<span class="case-id-text" style="color:#dc2626; background:#fee2e2; border:1px solid #fca5a5; padding:3px 10px; border-radius:4px; font-size: 13px; font-weight:600;">✕ 退回</span>';
       } else if (caseStatus === '取消') {
         statusBadge = '<span class="case-id-text" style="color:#475569; background:#f1f5f9; border:1px solid #cbd5e1; padding:3px 10px; border-radius:4px; font-size: 13px; font-weight:600;">⊘ 取消</span>';
       } else {
@@ -1350,14 +1352,13 @@ let currentHhStep = 1;
             <button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>
           `;
         } else if (caseStatus === '待確認') {
-          // 待確認狀態：顯示備查、退回、關閉
+          // 待確認狀態：顯示閱讀完成與關閉
           bottomActionBtns += `
-            <button class="btn-record" type="button" onclick="alert('案件【${data.caseNo}】已完成【備查列管】審核確認！'); closeVDialog();">備查</button>
-            <button class="btn-cancel-case" type="button" onclick="if(confirm('確認退回案件【${data.caseNo}】？')){ alert('案件已退回補正！'); closeVDialog(); }">退回</button>
+            <button class="btn-record" type="button" onclick="applyInspectionCaseStatus(['${data.caseNo}'], '已備查'); if(typeof renderView==='function') renderView('caseSearch'); closeVDialog();">閱讀完畢</button>
             <button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>
           `;
         } else {
-          // 取消或退回狀態：已結案不可再操作，僅顯示關閉
+          // 取消狀態：已結案不可再操作，僅顯示關閉
           bottomActionBtns += `
             <button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>
           `;

@@ -202,7 +202,7 @@
               </label>
               <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                 <input type="checkbox" id="role_inspector" value="ROLE_INSPECTOR" ${currentRoles.includes('ROLE_INSPECTOR') ? 'checked' : ''}>
-                <span><strong>勞檢機構審查人員</strong> - 具備轄區通報案件審查、備查與退回權限</span>
+                <span><strong>勞檢機構審查人員</strong> - 具備轄區通報案件閱讀、備查與查詢權限</span>
               </label>
               <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                 <input type="checkbox" id="role_notifier" value="ROLE_COMPANY_USER" ${currentRoles.includes('ROLE_COMPANY_USER') ? 'checked' : ''}>
@@ -448,8 +448,8 @@
             </div>
             <div class="checktree-children">
               <label class="checktree-child-item"><input type="checkbox" checked> 通報案件查詢 (CASE_QUERY)</label>
-              <label class="checktree-child-item"><input type="checkbox" checked> 案件審查核定 (CASE_AUDIT)</label>
-              <label class="checktree-child-item"><input type="checkbox" checked> 批次備查/退回作業 (CASE_BATCH_AUDIT)</label>
+              <label class="checktree-child-item"><input type="checkbox" checked> 案件閱讀與備查 (CASE_AUDIT)</label>
+              <label class="checktree-child-item"><input type="checkbox" checked> 批次標記已閱讀 (CASE_BATCH_AUDIT)</label>
             </div>
           </div>
           <div class="checktree-node">
@@ -694,7 +694,7 @@
           { id: 'CASE_DANGEROUS', name: '丁類危險性作業通報', endpoint: '/api/v1/cases/dangerous', crud: { c: true, r: true, u: true, d: true }, na: {} },
           { id: 'CASE_CONSTRUCT', name: '營造工程通報精靈', endpoint: '/api/v1/cases/construction', crud: { c: true, r: true, u: true, d: true }, na: {} },
           { id: 'CASE_SEARCH', name: '通報案件查詢與統計', endpoint: '/api/v1/cases/search', crud: { c: false, r: true, u: false, d: false }, na: { c: true, u: true, d: true } },
-          { id: 'CASE_AUDIT', name: '案件審查、備查與退回', endpoint: '/api/v1/cases/{id}/audit', crud: { c: false, r: true, u: true, d: false }, na: { c: true, d: true } },
+          { id: 'CASE_AUDIT', name: '案件閱讀與備查', endpoint: '/api/v1/cases/{id}/audit', crud: { c: false, r: true, u: true, d: false }, na: { c: true, d: true } },
           { id: 'CASE_DISPATCH', name: '指派檢查員與會勘', endpoint: '/api/v1/cases/{id}/dispatch', crud: { c: true, r: true, u: true, d: false }, na: { d: true } }
         ]
       },
