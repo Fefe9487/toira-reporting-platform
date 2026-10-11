@@ -34,6 +34,12 @@ python -m http.server 18767
 
 Q&A 的實際畫面內容位於 `faq.html`；`js/data/qa_content.json` 與 `js/data/qa_law_articles.json` 是交付用資料快照，單獨編輯 JSON 不會自動更新畫面。
 
+## 資訊公司建置需求：通知郵件
+
+正式平台須納入「通報完成通知郵件」功能：寄給填報者，並副知管轄勞動檢查機構。請資訊公司依[通知郵件交付文件](docs/vendor-handoff/email-notification/README.md)評估及實作後端寄送、通報資料 PDF、管轄機構收件設定與寄送紀錄。
+
+交付文件包含郵件版型、格式規格及 Q32 草稿。寄件信箱與部分細節尚待核定；目前主系統未接入實際寄信功能，Q32 亦未登錄至公開 Q&A。
+
 ## GitHub Pages
 
 Pages 從 `main` 分支的根目錄發布。`.nojekyll` 保留原本靜態檔案；更新網站後推送至 `main` 即可重新部署。
