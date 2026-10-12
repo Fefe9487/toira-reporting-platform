@@ -1,0 +1,43 @@
+{
+  "handoffOnly": true,
+  "note": "供資訊公司轉換並登錄至既有訊息範本維護；不是可直接呼叫的正式 API。寄件設定核定前保持停用。",
+  "template": {
+    "name": "危險作業通報完成通知",
+    "subject": "【TOiRA 危險作業通報】通報完成｜{CASE_NO}｜{WORK_NAME}",
+    "code": "HAZARD_REPORT_SUBMITTED",
+    "type": "EML",
+    "desc": "案件成功收件後通知填報者，並副知案件管轄勞動檢查機構。",
+    "content": "您好：\n\n本平台已收到您送出的危險作業通報資料，摘要如下：\n\n案件編號：{CASE_NO}\n通報時間：{SUBMITTED_AT}（臺灣時間）\n事業單位：{NOTIFIER_COMPANY}\n施作單位：{CONTRACTOR_UNIT}\n作業名稱：{WORK_NAME}\n危險作業：{DANGEROUS_WORK_ITEMS}\n預定作業期間：{START_DATE} 至 {END_DATE}\n作業地點：{LOCATION_SUMMARY}\n管轄機構：{INSPECTION_OFFICE}\n案件狀態：{CASE_STATUS}\n\n本次附件清單：\n{ATTACHMENT_LIST}\n\n本信附有本次通報資料 PDF：{REPORT_PDF_FILENAME}\n風險評估及其他佐證資料，請登入平台查閱：\n{CASE_URL}\n\n本通知已副知管轄勞動檢查機構。\n「已備查」表示勞檢已閱讀資料，不代表核准開工或現場安全認證。\n請依評估結果落實預防措施，作業變更或取消時，於平台更新資料。\n\n如需協助，請致電管轄勞動檢查機構或平台服務專線：\n{INSPECTION_PHONE}／{SERVICE_PHONE}\n\n{PLATFORM_NAME}\n",
+    "htmlContentFile": "notification-template.html",
+    "plainTextContentFile": "notification-template.txt",
+    "enabled": false,
+    "version": 1,
+    "parameters": [
+      "ATTACHMENT_LIST",
+      "CASE_NO",
+      "CASE_STATUS",
+      "CASE_URL",
+      "CONTRACTOR_UNIT",
+      "DANGEROUS_WORK_ITEMS",
+      "END_DATE",
+      "INSPECTION_OFFICE",
+      "INSPECTION_PHONE",
+      "LOCATION_SUMMARY",
+      "NOTIFIER_COMPANY",
+      "PLATFORM_NAME",
+      "REPORT_PDF_FILENAME",
+      "SERVICE_PHONE",
+      "START_DATE",
+      "SUBMITTED_AT",
+      "WORK_NAME"
+    ]
+  },
+  "binding": {
+    "event": "HAZARD_REPORT_SUBMITTED",
+    "templateCode": "HAZARD_REPORT_SUBMITTED",
+    "trigger": "正式平台已成功保存案件及送出版本",
+    "toSource": "案件通報者資料中的填報者電子郵件",
+    "ccSource": "案件當次管轄勞動檢查機構的指定收件信箱",
+    "senderSource": "核定的郵件服務設定"
+  }
+}

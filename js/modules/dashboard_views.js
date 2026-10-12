@@ -1481,26 +1481,78 @@
     };
     window.globalLocalWorkData = globalLocalWorkData;
 
+    let lastRemovedLocalOffice = null;
     function getLocalMaintainViewHtml() {
-      const defaultUnit = ALL_ADMIN_UNITS_LIST[0];
       const links = getPortalLinks();
-      const item = links.offices[defaultUnit] || {url:'',enabled:false};
       return `<div class="page-title-row"><div class="page-title-left"><span class="page-title-text">地方通報網站維護</span></div><span class="page-breadcrumb">首頁 › 地方通報網站維護</span></div>
-        <div class="local-editor"><h3>各地區勞動檢查機構網站</h3><p>設定的連結會顯示於登入首頁及通報第二步的特殊通報提醒下方。</p>
-          <form onsubmit="event.preventDefault();saveLocalWorkItemEditor();">
-            <div class="form-field-group"><label for="localAdminUnitSelect">勞動檢查機構 <span class="form-req">*</span></label><select id="localAdminUnitSelect" class="v-select" onchange="loadLocalWorkItemEditor()">${ALL_ADMIN_UNITS_LIST.map(unit=>`<option value="${portalEscape(unit)}">${portalEscape(unit)}</option>`).join('')}</select></div>
-            <div class="form-field-group"><label for="localAdminWebsite">主要通報入口網址</label><input class="v-input" type="url" id="localAdminWebsite" value="${portalEscape(item.url)}" placeholder="https://" aria-describedby="localWebsiteHelp"></div>
-            <p class="local-editor-help" id="localWebsiteHelp">請填入實際通報入口，使用完整的 http:// 或 https:// 網址。同一機構有不同通報服務時，可在下方新增其他入口。</p>
-            <div class="form-field-group"><label for="localAdminWebsiteLabel">主要入口名稱</label><input id="localAdminWebsiteLabel" class="v-input" maxlength="100" value="${portalEscape(item.label || '通報入口')}" placeholder="例如：特定作業通報"></div>
-            <section class="local-extra-entrances" aria-labelledby="localExtraTitle"><h4 id="localExtraTitle">其他通報入口</h4><div id="localAdditionalLinks">${getLocalAdditionalLinksHtml(item.additionalLinks)}</div><button type="button" class="v-btn v-btn-cancel" onclick="addLocalAdditionalLink()">新增通報入口</button></section>
-
-            <div class="form-field-group"><label for="localWebsiteEnabled">顯示於平台</label><div><label class="risk-confirm"><input type="checkbox" id="localWebsiteEnabled" ${item.enabled?'checked':''}>顯示這個機構的網站連結</label></div></div>
-            <div class="local-editor-actions"><button type="button" class="v-btn v-btn-cancel" onclick="loadLocalWorkItemEditor()">重新載入</button><button type="submit" class="v-btn v-btn-primary">儲存網站連結</button></div>
-            <p class="flow-error" id="localWebsiteError" role="alert" hidden></p><p class="local-save-status" id="localWebsiteStatus" role="status"></p>
-          </form>
-          <h4>目前顯示的網站</h4><div class="local-configured-list" id="localConfiguredBadges">${getLocalLinkButtonsHtml()}</div>
+        <div class="local-editor"><h3>勞檢機構特殊申報網站</h3><p>只保留有特殊申報作業的機構。設定的連結會顯示於通報第二步的特殊通報提醒下方。</p>
+          <div class="local-office-toolbar"><strong id="localOfficeCount">目前保留 ${Object.keys(links.offices).length} 個機構</strong><button type="button" class="v-btn v-btn-primary" onclick="openLocalReportingOfficeEditor()">新增機構</button></div>
+          <p class="local-save-status" id="localWebsiteStatus" role="status" aria-live="polite"></p><button type="button" class="v-btn v-btn-cancel" id="localOfficeUndo" hidden onclick="undoRemoveLocalReportingOffice()">撤銷移除</button>
+          <div id="localConfiguredBadges">${getLocalLinkButtonsHtml()}</div>
+          <section id="localOfficeEditor" class="local-office-editor" aria-labelledby="localOfficeEditorTitle" hidden>
+            <h4 id="localOfficeEditorTitle">特殊申報網站設定</h4>
+            <form onsubmit="event.preventDefault();saveLocalWorkItemEditor();">
+              <div class="form-field-group"><label for="localAdminUnitSelect">勞動檢查機構 <span class="form-req">*</span></label><select id="localAdminUnitSelect" class="v-select" onchange="loadLocalWorkItemEditor()"><option value="">請選擇機構</option></select></div>
+              <div class="form-field-group"><label for="localAdminWebsite">主要通報入口網址 <span class="form-req">*</span></label><input class="v-input" type="url" id="localAdminWebsite" placeholder="https://" aria-describedby="localWebsiteHelp"></div>
+              <p class="local-editor-help" id="localWebsiteHelp">填入特殊申報的實際入口網址；同一機構有不同服務時，可新增其他入口。</p>
+              <div class="form-field-group"><label for="localAdminWebsiteLabel">主要入口名稱</label><input id="localAdminWebsiteLabel" class="v-input" maxlength="100" placeholder="例如：特定作業通報"></div>
+              <section class="local-extra-entrances" aria-labelledby="localExtraTitle"><h4 id="localExtraTitle">其他通報入口</h4><div id="localAdditionalLinks"></div><button type="button" class="v-btn v-btn-cancel" onclick="addLocalAdditionalLink()">新增通報入口</button></section>
+              <div class="form-field-group"><label for="localWebsiteEnabled">顯示於通報頁</label><div><label class="risk-confirm"><input type="checkbox" id="localWebsiteEnabled" checked>顯示這個機構的特殊申報連結</label></div></div>
+              <div class="local-editor-actions"><button type="button" class="v-btn v-btn-cancel" onclick="closeLocalReportingOfficeEditor()">取消編輯</button><button type="submit" class="v-btn v-btn-primary">儲存網站連結</button></div>
+              <p class="flow-error" id="localWebsiteError" role="alert" hidden></p>
+            </form>
+          </section>
           ${currentRole === 'admin' ? `<section class="toira-admin-settings"><h3>TOiRA 入口網址</h3><p>TOiRA 正式服務上線或網址變更時，可在此更新。</p><form onsubmit="event.preventDefault();saveToiraPortalUrl();"><label for="portalToiraUrl">TOiRA 網址</label><input id="portalToiraUrl" class="v-input" type="url" required value="${portalEscape(links.toiraUrl)}"><button type="submit" class="v-btn v-btn-primary">儲存 TOiRA 網址</button><p id="toiraSettingStatus" role="status"></p></form></section>` : ''}
         </div>`;
+    }
+    function canMaintainSpecialOfficeLinks() { return ['admin','inspection'].includes(window.currentRole); }
+    function openLocalReportingOfficeEditor(unitName = '') {
+      if (!canMaintainSpecialOfficeLinks()) return;
+      const config = getPortalLinks();
+      const units = unitName ? [unitName] : ALL_ADMIN_UNITS_LIST.filter(unit => !config.offices[unit]);
+      const status = document.getElementById('localWebsiteStatus');
+      if (!units.length) { status.textContent = '所有機構皆已加入；請從清單編輯或移除。'; return; }
+      const sel = document.getElementById('localAdminUnitSelect');
+      sel.innerHTML = (unitName ? '' : '<option value="">請選擇機構</option>') + units.map(unit => `<option value="${portalEscape(unit)}">${portalEscape(unit)}</option>`).join('');
+      sel.disabled = !!unitName; sel.value = unitName;
+      document.getElementById('localOfficeEditorTitle').textContent = unitName ? '編輯特殊申報網站' : '新增特殊申報機構';
+      document.getElementById('localOfficeEditor').hidden = false;
+      loadLocalWorkItemEditor();
+      (unitName ? document.getElementById('localAdminWebsite') : sel).focus();
+    }
+    function closeLocalReportingOfficeEditor() { document.getElementById('localOfficeEditor').hidden = true; }
+    function refreshLocalReportingOfficeList() {
+      document.getElementById('localConfiguredBadges').innerHTML = getLocalLinkButtonsHtml();
+      document.getElementById('localOfficeCount').textContent = '目前保留 ' + Object.keys(getPortalLinks().offices).length + ' 個機構';
+      refreshPortalLinks();
+    }
+    function removeLocalReportingOffice(unit) {
+      if (!canMaintainSpecialOfficeLinks()) return;
+      const config = getPortalLinks();
+      if (!config.offices[unit]) return;
+      const item = structuredClone(config.offices[unit]);
+      delete config.offices[unit];
+      const status = document.getElementById('localWebsiteStatus');
+      try { localStorage.setItem(PORTAL_CONFIG_KEY, JSON.stringify(config)); }
+      catch { status.textContent = '無法儲存移除結果，請確認瀏覽器允許儲存資料後重試。'; return; }
+      lastRemovedLocalOffice = {unit,item};
+      closeLocalReportingOfficeEditor();
+      refreshLocalReportingOfficeList();
+      status.textContent = '已移除「' + unit + '」的特殊申報連結，可撤銷或重新新增。';
+      document.getElementById('localOfficeUndo').hidden = false;
+    }
+    function undoRemoveLocalReportingOffice() {
+      if (!canMaintainSpecialOfficeLinks() || !lastRemovedLocalOffice) return;
+      const config = getPortalLinks(), removed = lastRemovedLocalOffice;
+      if (config.offices[removed.unit]) return;
+      config.offices[removed.unit] = removed.item;
+      const status = document.getElementById('localWebsiteStatus');
+      try { localStorage.setItem(PORTAL_CONFIG_KEY, JSON.stringify(config)); }
+      catch { status.textContent = '無法撤銷移除，請確認瀏覽器允許儲存資料後重試。'; return; }
+      lastRemovedLocalOffice = null;
+      refreshLocalReportingOfficeList();
+      document.getElementById('localOfficeUndo').hidden = true;
+      status.textContent = '已恢復「' + removed.unit + '」的特殊申報連結。';
     }
     let localExtraLinkSequence = 0;
     function getLocalAdditionalLinkRowHtml(link = {}) {
@@ -1516,16 +1568,19 @@
       container.lastElementChild.querySelector('.local-extra-name').focus();
     }
     function getLocalLinkButtonsHtml() {
-      const config = getPortalLinks();
-      return ALL_ADMIN_UNITS_LIST.map(unit=>`<button type="button" class="local-unit-button" onclick="selectLocalAdminUnitQuick('${portalEscape(unit)}')"><span>${portalEscape(unit)}</span><small>${config.offices[unit]?.enabled && config.offices[unit]?.url ? '顯示中' : (config.offices[unit]?.url ? '未顯示' : '未設定入口')}</small></button>`).join('');
+      const offices = getPortalLinks().offices;
+      const units = ALL_ADMIN_UNITS_LIST.filter(unit => offices[unit]);
+      if (!units.length) return '<div class="local-office-empty"><p>尚未保留特殊申報機構。需要時請新增機構及通報入口。</p></div>';
+      return '<div class="v-table-wrap"><table class="v-table local-office-table"><thead><tr><th>勞動檢查機構</th><th>特殊申報入口</th><th>操作</th></tr></thead><tbody>' + units.map(unit => {
+        const item = offices[unit];
+        const links = [{url:item.url,label:item.label}, ...(item.additionalLinks || [])];
+        return `<tr><td><strong>${portalEscape(unit)}</strong><small class="local-office-visibility">${item.enabled ? '顯示於通報頁' : '暫不顯示'}</small></td><td>${links.map(link => `<a class="local-office-link" href="${portalEscape(link.url)}" target="_blank" rel="noopener noreferrer">${portalEscape(link.label)}<span class="sr-only">（另開新分頁）</span></a>`).join('')}</td><td class="local-office-row-actions"><button type="button" class="v-btn v-btn-cancel" onclick="selectLocalAdminUnitQuick('${portalEscape(unit)}')" aria-label="編輯 ${portalEscape(unit)}">編輯</button><button type="button" class="v-btn v-btn-cancel local-office-remove" onclick="removeLocalReportingOffice('${portalEscape(unit)}')" aria-label="移除 ${portalEscape(unit)}">移除</button></td></tr>`;
+      }).join('') + '</tbody></table></div>';
     }
-    function selectLocalAdminUnitQuick(unitName) {
-      const sel = document.getElementById('localAdminUnitSelect');
-      if (sel) { sel.value = unitName; loadLocalWorkItemEditor(); sel.focus(); }
-    }
+    function selectLocalAdminUnitQuick(unitName) { openLocalReportingOfficeEditor(unitName); }
     function loadLocalWorkItemEditor() {
       const unit = document.getElementById('localAdminUnitSelect')?.value;
-      const item = getPortalLinks().offices[unit] || {url:'',enabled:false};
+      const item = getPortalLinks().offices[unit] || {url:'',enabled:true};
       const input = document.getElementById('localAdminWebsite');
       if (!input) return;
       input.value = item.url;
@@ -1536,12 +1591,13 @@
       document.getElementById('localWebsiteError').hidden = true;
     }
     function saveLocalWorkItemEditor() {
+      if (!canMaintainSpecialOfficeLinks()) return;
       const unit = document.getElementById('localAdminUnitSelect')?.value;
       const raw = document.getElementById('localAdminWebsite')?.value.trim() || '';
       const enabled = document.getElementById('localWebsiteEnabled')?.checked;
       const error = document.getElementById('localWebsiteError');
-      if (!unit || (raw && !portalSafeUrl(raw)) || (enabled && !raw)) {
-        error.textContent = '請選擇機構，並填寫有效的 http:// 或 https:// 網址；不顯示連結時可留白。'; error.hidden = false; document.getElementById('localAdminWebsite').focus(); return;
+      if (!ALL_ADMIN_UNITS_LIST.includes(unit) || !portalSafeUrl(raw)) {
+        error.textContent = '請選擇機構，並填寫有效的 http:// 或 https:// 特殊申報入口網址。'; error.hidden = false; document.getElementById('localAdminWebsite').focus(); return;
       }
       const additionalLinks = [];
       for (const row of document.querySelectorAll('#localAdditionalLinks .local-extra-link')) {
@@ -1566,8 +1622,10 @@
       catch { error.textContent = '瀏覽器無法儲存設定，請確認允許網站儲存資料後重試。'; error.hidden = false; return; }
       error.hidden = true;
       document.getElementById('localWebsiteStatus').textContent = '已儲存「' + unit + '」的網站連結。';
-      document.getElementById('localConfiguredBadges').innerHTML = getLocalLinkButtonsHtml();
-      refreshPortalLinks();
+      lastRemovedLocalOffice = null;
+      document.getElementById('localOfficeUndo').hidden = true;
+      closeLocalReportingOfficeEditor();
+      refreshLocalReportingOfficeList();
     }
     function saveToiraPortalUrl() {
       const input = document.getElementById('portalToiraUrl');

@@ -579,6 +579,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .local-configured-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .local-unit-button { background:#f8fafc; border:1px solid #dbe4ea; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; color:#365766; font-size:14px; text-align:left; border-radius:5px; }
 .local-unit-button small { color:#627683; font-size:12px; white-space:nowrap; }
+.local-editor [hidden] { display:none !important; }
+.local-office-toolbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; color:#365766; }
+.local-office-table { table-layout:fixed; width:100%; min-width:0; }
+.local-office-table th:nth-child(1) { width:30%; }
+.local-office-table th:nth-child(2) { width:48%; }
+.local-office-table th:nth-child(3) { width:22%; }
+.local-office-table td { white-space:normal; overflow-wrap:anywhere; vertical-align:middle; }
+.local-office-visibility { display:block; color:#627683; font-size:12px; margin-top:6px; }
+.local-office-link { display:block; color:#23628b; text-decoration:underline; line-height:1.8; margin:3px 0; }
+.local-office-row-actions .v-btn { margin:3px; padding:7px 12px; font-size:14px; }
+.local-office-row-actions .local-office-remove { color:#a4372b; border-color:#d7a29c; }
+.local-office-editor { border-top:1px solid #dbe4ea; margin-top:26px; padding-top:4px; }
+.local-office-empty { border:1px dashed #c5d2dc; padding:24px; color:#627683; background:#f8fafc; }
+.local-office-empty p { margin:0; line-height:1.8; }
+#localOfficeUndo { margin:0 0 16px; }
 .toira-admin-settings { border-top:1px solid #dbe4ea; padding-top:26px; margin-top:30px; }
 .toira-admin-settings form { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .toira-admin-settings #toiraSettingStatus { flex-basis:100%; color:#286d62; font-size:13px; }

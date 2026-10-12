@@ -1,5 +1,6 @@
 /* Reporting entrances verified against official agency links on 2026-10-10. */
-const PORTAL_CONFIG_KEY = 'hazardPortal.links.v2';
+const PORTAL_CONFIG_KEY = 'hazardPortal.links.v3';
+const PORTAL_PREVIOUS_CONFIG_KEY = 'hazardPortal.links.v2';
 const PORTAL_LEGACY_CONFIG_KEY = 'hazardPortal.links.v1';
 const PORTAL_LINK_DEFAULTS = {
   toiraUrl: 'https://sh168.osha.gov.tw/',
@@ -16,15 +17,11 @@ const PORTAL_LINK_DEFAULTS = {
       { url: 'https://klsiocs.kcg.gov.tw/', label: '局限空間作業申報' }
     ] },
     '國科會新竹科學園區管理局': { url: 'https://saturn.sipa.gov.tw/OSH/index.do', label: '職業安全衛生資訊網（特定作業通報）', enabled: true },
-    // Keep agencies without a verified reporting entrance available in maintenance.
-    '國科會中部科學園區管理局': { url: '', label: '通報入口', enabled: false },
-    '國科會南部科學園區管理局': { url: 'https://epark.nstc.gov.tw/S01/login', label: '科學園區廠商服務網（特定作業通報）', enabled: true },
-    '經濟部產業園區管理局': { url: '', label: '通報入口', enabled: false },
-    '北區職業安全衛生中心': { url: 'https://dons.osha.gov.tw/', label: '危險作業線上通報', enabled: true },
-    '中區職業安全衛生中心': { url: 'https://dons.osha.gov.tw/', label: '危險作業線上通報', enabled: true },
-    '南區職業安全衛生中心': { url: 'https://dons.osha.gov.tw/', label: '危險作業線上通報', enabled: true }
+    '國科會南部科學園區管理局': { url: 'https://epark.nstc.gov.tw/S01/login', label: '科學園區廠商服務網（特定作業通報）', enabled: true }
   }
 };
+// Special reporting entries are separate from the complete jurisdiction directory.
+// General reporting sites and agencies without an entrance are not prelisted here.
 const PORTAL_LEGACY_HOME_URLS = [
   'https://ilabor.ntpc.gov.tw/', 'https://lio.gov.taipei/', 'https://oli.tycg.gov.tw/',
   'https://www.labor.taichung.gov.tw/', 'https://lsic.tainan.gov.tw/', 'https://klsio.kcg.gov.tw/',
@@ -38,7 +35,7 @@ function portalSafeUrl(value) {
   try { const u = new URL(String(value || '').trim()); return ['https:', 'http:'].includes(u.protocol) && !u.username && !u.password ? u.href : ''; }
   catch { return ''; }
 }
-function portalCleanOffice(item, defaultItem) {
+function portalCleanOffice(item, defaultItem = {url:'',label:'通報入口'}) {
   const url = portalSafeUrl(item.url);
   return {
     url, label: String(item.label || (url === defaultItem.url ? defaultItem.label : '通報入口')).slice(0,100),
@@ -50,17 +47,25 @@ function getPortalLinks() {
   const config = structuredClone(PORTAL_LINK_DEFAULTS);
   try {
     const currentRaw = localStorage.getItem(PORTAL_CONFIG_KEY);
-    const saved = JSON.parse(currentRaw || localStorage.getItem(PORTAL_LEGACY_CONFIG_KEY) || 'null');
-    const legacy = !currentRaw;
+    const previousRaw = currentRaw ? null : localStorage.getItem(PORTAL_PREVIOUS_CONFIG_KEY);
+    const saved = JSON.parse(currentRaw || previousRaw || localStorage.getItem(PORTAL_LEGACY_CONFIG_KEY) || 'null');
+    const legacy = !currentRaw && !previousRaw;
     if (saved && portalSafeUrl(saved.toiraUrl)) config.toiraUrl = portalSafeUrl(saved.toiraUrl);
+    if (!saved || !saved.offices || typeof saved.offices !== 'object' || Array.isArray(saved.offices)) return config;
+    // v3 is an explicit list: removed entries and an empty list stay removed on reload.
+    config.offices = {};
     for (const unit of ALL_ADMIN_UNITS_LIST) {
       const item = saved?.offices?.[unit];
       if (!item || typeof item !== 'object') continue;
-      const defaultItem = config.offices[unit];
+      const defaultItem = PORTAL_LINK_DEFAULTS.offices[unit];
       if (legacy && PORTAL_LEGACY_HOME_URLS.includes(portalSafeUrl(item.url))) {
-        // Replace old seeded homepages while preserving the administrator's visibility choice.
-        defaultItem.enabled = !!defaultItem.url && item.enabled === true;
-      } else config.offices[unit] = portalCleanOffice(item, defaultItem);
+        if (defaultItem && item.enabled === true) config.offices[unit] = structuredClone(defaultItem);
+        continue;
+      }
+      const cleaned = portalCleanOffice(item, defaultItem);
+      if (!cleaned.url) continue;
+      if (!currentRaw && cleaned.url === 'https://dons.osha.gov.tw/') continue;
+      config.offices[unit] = cleaned;
     }
   } catch { /* Use official defaults when storage is unavailable or malformed. */ }
   return config;
@@ -80,9 +85,8 @@ function renderPortalOfficeLinks(containerId = 'hhOfficeLinks') {
 }
 function refreshPortalLinks() {
   renderPortalOfficeLinks('hhOfficeLinks');
-  renderPortalOfficeLinks('landingOfficeLinks');
   const toiraUrl = getPortalLinks().toiraUrl;
   document.querySelectorAll('[data-toira-link]').forEach(a => { a.href = toiraUrl; });
 }
 window.addEventListener('DOMContentLoaded', refreshPortalLinks);
-window.addEventListener('storage', event => { if ([PORTAL_CONFIG_KEY,PORTAL_LEGACY_CONFIG_KEY].includes(event.key) || event.key === null) refreshPortalLinks(); });
+window.addEventListener('storage', event => { if ([PORTAL_CONFIG_KEY,PORTAL_PREVIOUS_CONFIG_KEY,PORTAL_LEGACY_CONFIG_KEY].includes(event.key) || event.key === null) refreshPortalLinks(); });
