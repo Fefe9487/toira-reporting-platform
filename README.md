@@ -4,6 +4,7 @@
 
 - 展示網站：https://fefe9487.github.io/toira-reporting-platform/
 - 常見問答：https://fefe9487.github.io/toira-reporting-platform/faq.html
+- 下載專區：https://fefe9487.github.io/toira-reporting-platform/downloads.html
 
 ## 展示範圍
 
@@ -31,10 +32,35 @@ python -m http.server 18767
 - `login.html`：登入封面及平台畫面。
 - `dashboard.html`：平台畫面獨立入口。
 - `faq.html`：常見問答，引用條文全文預設收合。
+- `downloads.html`：前台下載專區；首頁與 Q&A 統一連至此頁。
+- `js/data/downloads.json`：已定稿的下載文件清單，依清單順序顯示。
 - `js/data/portal_config.js`：TOiRA 與地方通報入口的預設設定。
 - `js/data/toira_work_catalog.js`：通報作業與 TOiRA 評估項目對照。
 
 Q&A 的實際畫面內容位於 `faq.html`；`js/data/qa_content.json` 與 `js/data/qa_law_articles.json` 是交付用資料快照，單獨編輯 JSON 不會自動更新畫面。
+
+## 下載文件維護
+
+下載專區沿用靜態網站，無須登入。首頁不直接連到個別下載檔案，下載資訊集中維護於 `js/data/downloads.json`。
+
+僅將已確認可公開的文件放入 `assets/documents/`，並在清單中新增下列資料（清單順序即顯示順序）：
+
+```json
+[
+  {
+    "title": "已定稿的文件名稱",
+    "description": "文件用途說明",
+    "updated": "115 年 10 月 13 日",
+    "format": "PDF",
+    "size": "256 KB",
+    "file": "assets/documents/example.pdf"
+  }
+]
+```
+
+上例僅為格式說明，未發布示範文件。`file` 必須指向本站 `assets/documents/` 下的實際檔案；`title` 與 `file` 必填，其餘欄位可省略。名稱與說明以文字顯示，不解析為 HTML。
+
+未定稿的「危險作業線上風險評估及通報注意事項1151008.docx」已撤下，包括首頁與 Q&A 的引用及下載連結，草稿保存在網站根目錄外。目前清單為空，顯示「目前尚無提供下載的文件」。下架文件時也應將檔案移出網站公開目錄，以停用直接下載網址。
 
 ## 資訊公司建置需求：通知郵件
 
