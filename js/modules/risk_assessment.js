@@ -23,7 +23,7 @@ function getHhRiskStepHtml() {
     <section id="hhRiskUploadPanel" class="risk-evidence-panel" aria-label="自行上傳評估資料">
       <h4>上傳已完成的評估資料 <span class="form-req">*</span></h4><p>請附上本次各項危險作業的風險評估結果或相關佐證資料。</p>
       <input class="risk-file-input" type="file" id="hhRiskAssessmentInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="handleHhRiskAssessmentUpload(this,'upload')" aria-label="選擇風險評估資料" aria-describedby="hhRiskFileHelp">
-      <small id="hhRiskFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 20 MB。</small>
+      <small id="hhRiskFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 ${HH_ATTACHMENT_MAX_MB} MB。</small>
       <div id="hhRiskAssessmentList" class="risk-file-list" aria-live="polite"></div>
     </section>
     <section id="hhRiskToiraPanel" class="risk-evidence-panel" aria-label="TOiRA 線上風險評估" hidden>
@@ -34,7 +34,7 @@ function getHhRiskStepHtml() {
       ${HH_TOIRA_REFERENCE_ENABLED ? '<label for="hhToiraReference">評估紀錄編號（選填）</label><input class="search-input" id="hhToiraReference" maxlength="100" placeholder="如工具有提供紀錄編號，可填寫於此">' : ''}
       <label class="risk-upload-label" for="hhToiraAssessmentInput">上傳 TOiRA 評估結果 <span class="form-req">*</span></label>
       <input class="risk-file-input" type="file" id="hhToiraAssessmentInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="handleHhRiskAssessmentUpload(this,'toira')" aria-describedby="hhToiraFileHelp">
-      <small id="hhToiraFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 20 MB。</small>
+      <small id="hhToiraFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 ${HH_ATTACHMENT_MAX_MB} MB。</small>
       <div id="hhToiraAssessmentList" class="risk-file-list" aria-live="polite"></div>
     </section>
     <p id="hhRiskUploadStatus" class="risk-upload-status" role="status"></p>
@@ -74,7 +74,7 @@ function handleHhRiskAssessmentUpload(input, mode = 'upload') {
   let added = 0;
   for (const file of files) {
     if (!/\.(pdf|docx?|xlsx?|jpe?g|png)$/i.test(file.name)) { rejected.push(file.name + '：檔案格式不支援'); continue; }
-    if (file.size > 20 * 1048576) { rejected.push(file.name + '：超過 20 MB'); continue; }
+    if (file.size > HH_ATTACHMENT_MAX_BYTES) { rejected.push(file.name + '：超過 ' + HH_ATTACHMENT_MAX_MB + ' MB'); continue; }
     if (!file.size) { rejected.push(file.name + '：檔案內容為空'); continue; }
     if (hhRiskFiles[mode].some(item => item.name === file.name && item.file?.size === file.size && item.file?.lastModified === file.lastModified)) { rejected.push(file.name + '：已在清單中'); continue; }
     hhRiskFiles[mode].push({name:file.name, file}); added++;

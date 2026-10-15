@@ -640,3 +640,15 @@ body {
 .portal-header a:hover { text-decoration:underline; text-underline-offset:4px; }
 #loginView footer { margin-top:0; border-top:3px solid #174d7e; background:#e2e8ef; color:#3e5569; }
 #loginView .accessibility-badge { border:0; color:#3e5569; }
+
+/* Homepage tutorial: preserve the full video interface and native player controls. */
+.portal-tutorial { background:#fff; border:1px solid #cbd6df; margin-top:24px; padding:22px 24px; scroll-margin-top:24px; min-width:0; }
+.portal-tutorial-summary { color:#435563; font-size:15px; line-height:1.8; margin:0 0 18px; }
+.portal-tutorial-player { width:100%; max-width:960px; aspect-ratio:16 / 9; margin:0 auto; background:#0f172a; }
+.portal-tutorial-player iframe { display:block; width:100%; height:100%; border:0; }
+.portal-tutorial-link { max-width:960px; margin:12px auto 0; line-height:1.8; }
+.portal-tutorial-link a { display:inline-block; color:#225d8d; font-size:14px; padding:4px 0; text-underline-offset:4px; }
+.portal-tutorial-link a:focus-visible { outline:2px solid #225d8d; outline-offset:4px; }
+@media (max-width:576px) {
+  .portal-tutorial { padding:18px 16px; }
+}
