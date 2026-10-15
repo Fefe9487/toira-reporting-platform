@@ -28,20 +28,25 @@
 
   function getHazardCompletionPanelHtml(data) {
     const notice = ensureHazardCompletionNotice(data);
+    const defaultRecipient = roleMenuData[window.currentRole]?.email || '';
     return `<p id="caseCompletionNote" class="completion-action-note">${data.status === '取消' ? '案件已取消，仍可下載通報資料；不再寄送通報完成通知。' : 'PDF 為展示案件資料；目前未啟用電子郵件寄送服務。'}</p>
       <section id="caseResendPanel" class="case-resend-panel" aria-labelledby="caseResendTitle" hidden>
         <h3 id="caseResendTitle">確認再次寄送通知</h3>
+        <form onsubmit="event.preventDefault(); confirmHazardResend(this)">
         <dl>
           <div><dt>案件編號</dt><dd>${portalEscape(data.caseNo)}</dd></div>
-          <div><dt>收件者</dt><dd>${portalEscape(notice.report.email || '填報者登錄信箱（展示案件未提供）')}</dd></div>
-          <div><dt>副本</dt><dd>${portalEscape(notice.report.adminOffice || '管轄勞動檢查機構')}指定信箱（正式平台帶入）</dd></div>
+          <div><dt><label for="caseResendRecipient">收件者</label></dt><dd>
+            <input type="email" class="v-input" id="caseResendRecipient" name="recipient" value="${portalEscape(defaultRecipient)}" required maxlength="254" autocomplete="email" placeholder="請輸入收件者電子郵件" aria-describedby="caseResendRecipientHelp">
+            <small id="caseResendRecipientHelp">預設為個人資料的電子信箱，可修改本次收件地址。</small>
+          </dd></div>
           <div><dt>隨信附件</dt><dd>${portalEscape(notice.filename)}</dd></div>
         </dl>
-        <p>目前僅展示重寄確認流程，不會寄出電子郵件。正式服務將使用原通知的收件對象與同版本附件。</p>
+        <p>重寄僅寄送至上方指定的收件者，不副知勞檢機構。目前為展示流程，不會寄出電子郵件。</p>
         <div class="case-resend-actions">
           <button type="button" class="v-btn v-btn-cancel" onclick="toggleHazardResend(this, false)">取消重寄</button>
-          <button type="button" class="v-btn v-btn-primary" onclick="confirmHazardResend(this)">確認重寄（展示）</button>
+          <button type="submit" class="v-btn v-btn-primary">確認重寄（展示）</button>
         </div>
+        </form>
       </section>
       <p class="completion-action-status" role="status" aria-live="polite"></p>`;
   }
@@ -70,7 +75,7 @@
     trigger.setAttribute('aria-expanded', String(open));
     if (open) {
       showStatus(container, '');
-      panel.querySelector('button').focus();
+      panel.querySelector('input').focus();
     } else trigger.focus();
   }
 
@@ -80,8 +85,12 @@
       showStatus(container, '案件已取消，無法再次寄送通報完成通知。', true);
       return;
     }
+    const recipientInput = container.querySelector('#caseResendRecipient');
+    recipientInput.value = recipientInput.value.trim();
+    if (!recipientInput.reportValidity()) return;
+    const recipient = recipientInput.value;
     toggleHazardResend(button, false);
-    showStatus(container, '重寄確認展示已完成。目前未啟用寄信服務，未寄出電子郵件。');
+    showStatus(container, `重寄確認展示已完成。收件者：${recipient}。目前未啟用寄信服務，未寄出電子郵件。`);
   }
 
   // 使用瀏覽器中文字型繪製 A4 頁面，再封裝為 PDF；不需外部字型或 CDN。
