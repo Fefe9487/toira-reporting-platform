@@ -14,6 +14,7 @@
 
 ## 交付內容
 
+- [案件詳情下載與通知重寄：展示範圍、正式服務契約及驗收](case-detail-actions.md)
 - [寄送規格、純文字範本及 Q32 草稿](specification.md)
 - [與訊息範本維護連動的欄位、參數及驗收規格](template-maintenance-integration.md)
 - [初始範本登錄示意資料](template-registration.json)、[純文字參數範本](notification-template.txt)及 [HTML 參數範本](notification-template.html)

@@ -945,7 +945,7 @@
       if (role === 'company' || role === 'inspection') {
         const isInspection = role === 'inspection';
         const defaultAccount = isInspection ? "inspector@osha.gov.tw" : "company_user@osha.gov.tw";
-        const defaultEmail = isInspection ? "inspector@osha.gov.tw" : "company_user@osha.gov.tw";
+        const defaultEmail = roleMenuData[role]?.email || '';
         const defaultName = isInspection ? "林督察員" : "王大明";
         const defaultPhone = isInspection ? "04-22558899" : "0912-345678";
         const defaultAddress = isInspection ? "台中市南屯區黎明路二段 501 號 7 樓" : "台北市中正區重慶南路一段 100 號 8 樓";
@@ -979,7 +979,7 @@
               <!-- 電子信箱 (不可修改) -->
               <div class="form-field-group">
                 <label>電子信箱 <span style="font-size: 13px; color:#ef4444;">(不可修改)</span></label>
-                <input type="email" class="v-input" id="accEmail" value="${defaultEmail}" readonly style="background:#f1f5f9; color:#64748b; cursor:not-allowed; font-family:monospace; font-weight:600;">
+                <input type="email" class="v-input" id="accEmail" value="${portalEscape(defaultEmail)}" readonly style="background:#f1f5f9; color:#64748b; cursor:not-allowed; font-family:monospace; font-weight:600;">
               </div>
 
               <!-- 姓名 -->

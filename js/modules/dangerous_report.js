@@ -695,6 +695,9 @@ let currentHhStep = 1;
       data.caseNo = caseNo;
       data.status = existing?.status || '待確認';
       DEMO_HAZARD_CASES[caseNo] = {...existing,...data};
+      const submitted = DEMO_HAZARD_CASES[caseNo];
+      submitted.submittedAt = new Date().toLocaleString('zh-TW', {timeZone:'Asia/Taipei',hour12:false});
+      submitted.completionNotice = createHazardCompletionNotice(submitted, existing?.completionNotice?.version || 0);
       const catalogRow = inspectionCaseCatalog.find(row=>row.id === caseNo);
       const row = {id:caseNo, company:data.notifierCompany, unit:data.contractorUnit, workName:data.workName, region:data.city + data.dist, workRange:hhRocDate(data.startDate) + ' ~ ' + hhRocDate(data.endDate), submitDate:catalogRow?.submitDate || hhRocDate(today), status:data.status, scale:false};
       if (catalogRow) Object.assign(catalogRow,row);
@@ -1220,13 +1223,15 @@ let currentHhStep = 1;
      * 危險作業線上通報：案件詳情檢視 (參考 2026_osaha-main/sp_detail.html)
      */
     function openHazardCaseDetail(caseNo, defaultWorkName) {
-      const data = getHazardCaseData(caseNo);
+      const data = Object.prototype.hasOwnProperty.call(DEMO_HAZARD_CASES, caseNo) ? DEMO_HAZARD_CASES[caseNo] : null;
+      if (!data) { alert('找不到此案件，請返回案件列表重新查詢。'); return; }
+      if (defaultWorkName && (!data.workName || data.workName.includes('高架橋梁'))) {
+        data.workName = defaultWorkName;
+      }
+      ensureHazardCompletionNotice(data);
       if (typeof markInspectionCaseRead === 'function' && markInspectionCaseRead(caseNo)) {
         data.status = '已備查';
         if (typeof renderView === 'function' && window.currentActiveKey === 'caseSearch') renderView('caseSearch');
-      }
-      if (defaultWorkName && (!data.workName || data.workName.includes('高架橋梁'))) {
-        data.workName = defaultWorkName;
       }
 
       const loc0 = (data.locations && data.locations[0]) || {};
@@ -1341,7 +1346,7 @@ let currentHhStep = 1;
         `;
       }
 
-      // 底部操作按鈕（依角色與案件狀態判斷：已備查時顯示取消和關閉）
+      // 保留原有勞檢操作，並將下載及重寄置於關閉旁。
       const isInspection = (typeof currentRole !== 'undefined' && currentRole === 'inspection');
       let bottomActionBtns = '';
       if (isInspection) {
@@ -1349,28 +1354,19 @@ let currentHhStep = 1;
           // 狀態已備查時，編輯畫面按鈕顯示取消和關閉
           bottomActionBtns += `
             <button class="btn-cancel-case" type="button" onclick="if(confirm('確認取消案件【${data.caseNo}】之備查列管？')){ alert('案件【${data.caseNo}】已成功取消備查！'); closeVDialog(); }">取消</button>
-            <button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>
           `;
         } else if (caseStatus === '待確認') {
           // 待確認狀態：顯示閱讀完成與關閉
           bottomActionBtns += `
             <button class="btn-record" type="button" onclick="applyInspectionCaseStatus(['${data.caseNo}'], '已備查'); if(typeof renderView==='function') renderView('caseSearch'); closeVDialog();">閱讀完畢</button>
-            <button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>
-          `;
-        } else {
-          // 取消狀態：已結案不可再操作，僅顯示關閉
-          bottomActionBtns += `
-            <button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>
           `;
         }
-      } else {
-        bottomActionBtns += `
-          <button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>
-        `;
       }
+      bottomActionBtns += getHazardCompletionActionsHtml(data);
+      bottomActionBtns += '<button class="btn-back" type="button" onclick="closeVDialog()">關閉</button>';
 
       const detailHtml = `
-        <div class="case-detail-container">
+        <div class="case-detail-container" data-case-no="${portalEscape(data.caseNo)}">
           <!-- 案件詳情 Header (參考 sp_detail.html) -->
           <div class="detail-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:12px; margin-bottom:20px;">
             <h2 style="display:flex; align-items:center; gap:10px; margin:0; font-size:1.35rem; color:#1e293b; font-weight:700;">
@@ -1473,7 +1469,7 @@ let currentHhStep = 1;
 
               <div class="detail-card" style="grid-column: span 2;">
                 <div class="detail-label">電子郵件 / 通報者電話</div>
-                <div class="detail-value">${data.email || 'service@continent.com.tw'} / ${data.notifierPhone}</div>
+                <div class="detail-value">${portalEscape(data.email || '未提供')} / ${data.notifierPhone}</div>
               </div>
               <div class="detail-card">
                 <div class="detail-label">作業名稱</div>
@@ -1496,6 +1492,7 @@ let currentHhStep = 1;
           <div class="back-btn-box">
             ${bottomActionBtns}
           </div>
+          ${getHazardCompletionPanelHtml(data)}
         </div>
       `;
 

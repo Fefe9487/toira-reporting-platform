@@ -10,6 +10,7 @@
         roleName: "事業單位",
         roleDetail: "通報人 / 廠商身分",
         userName: "台灣營造事業單位",
+        email: "company_user@osha.gov.tw",
         menus: [
           { type: "link", key: "caseSearch", title: "通報案件查詢", icon: "file-text", active: true },
           { type: "link", key: "vendorMaintain", title: "廠商維護", icon: "building" }
@@ -21,6 +22,7 @@
         roleName: "勞檢機構",
         roleDetail: "勞動檢查機構審查人員",
         userName: "中區職業安全衛生中心",
+        email: "inspector@osha.gov.tw",
         menus: [
           { type: "link", key: "caseSearch", title: "通報案件查詢", icon: "file-text", active: true },
           { type: "link", key: "localMaintain", title: "地方通報網站維護", icon: "map-pin" },
@@ -33,6 +35,7 @@
         roleName: "管理者",
         roleDetail: "系統全權管理人員",
         userName: "系統管理員",
+        email: "admin@osha.gov.tw",
         menus: [
           { type: "link", key: "caseSearch", title: "通報案件查詢", icon: "file-text", active: true },
           { type: "link", key: "accountMaintain", title: "帳號維護", icon: "user" },
