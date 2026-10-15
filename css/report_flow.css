@@ -358,6 +358,54 @@
     .case-detail-container .btn-back:hover {
       background-color: #475569;
     }
+
+    .case-detail-container .btn-completion-download,
+    .case-detail-container .btn-completion-resend {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 9px 20px;
+      border: 1px solid #1958ad;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .case-detail-container .btn-completion-download {
+      color: #fff;
+      background: #1958ad;
+    }
+    .case-detail-container .btn-completion-resend {
+      color: #1958ad;
+      background: #fff;
+    }
+    .case-detail-container .btn-completion-download:hover { background: #113f7c; }
+    .case-detail-container .btn-completion-resend:hover { background: #eff6ff; }
+    .case-detail-container .back-btn-box button:focus-visible,
+    .case-resend-panel button:focus-visible { outline: 3px solid #0288d1; outline-offset: 3px; }
+    .case-detail-container .back-btn-box button:disabled { opacity: .55; cursor: not-allowed; }
+    .completion-action-note,
+    .completion-action-status { margin: 12px 0; text-align: center; font-size: 14px; line-height: 1.7; color: #475569; }
+    .completion-action-status { color: #166534; }
+    .completion-action-status:empty { display: none; }
+    .completion-action-status.is-error { color: #b91c1c; }
+    .case-resend-panel { margin-top: 20px; padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; }
+    .case-resend-panel[hidden] { display: none; }
+    .case-resend-panel h3 { margin: 0 0 16px; font-size: 18px; color: #174d7e; }
+    .case-resend-panel dl { margin: 0; }
+    .case-resend-panel dl > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; margin: 10px 0; }
+    .case-resend-panel dt { font-weight: 700; color: #475569; }
+    .case-resend-panel dd { margin: 0; overflow-wrap: anywhere; }
+    .case-resend-panel p { color: #475569; line-height: 1.7; }
+    .case-resend-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+    @media (max-width: 600px) {
+      .case-detail-container .back-btn-box button,
+      .case-resend-actions button { width: 100%; justify-content: center; min-height: 44px; }
+      .case-resend-panel { padding: 16px; }
+      .case-resend-panel dl > div { grid-template-columns: 1fr; gap: 4px; }
+    }
   
 
     /* 側邊搜尋抽屜 (支援 searchbar-drawer 與 search-bar-drawer) */
