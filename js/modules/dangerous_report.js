@@ -985,7 +985,8 @@ let currentHhStep = 1;
                       <input type="file" id="hhAttachmentInput" multiple accept="image/*,.pdf" onchange="handleHhAttachmentUpload(this)" style="display:none;">
                     </label>
                   </div>
-                  <div style="font-size:12px; color:#64748b; margin-bottom:8px;">可上傳通風、測氣相片等（示意僅記錄檔名）。</div>
+                  <div style="font-size:12px; color:#64748b; margin-bottom:8px;">可上傳 PDF、通風或測氣相片等；每個檔案上限 ${HH_ATTACHMENT_MAX_MB} MB（展示僅記錄檔名）。</div>
+                  <p id="hhAttachmentUploadStatus" role="status" aria-live="polite" style="font-size:13px; line-height:1.7;"></p>
                   <div id="hhAttachmentList" style="display:flex; flex-direction:column; gap:6px;">
                     <div class="hh-attachment-item" style="display:flex; align-items:center; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px 12px; font-size: 13px;">
                       <span style="display:flex; align-items:center; gap:6px; color:#334155;">

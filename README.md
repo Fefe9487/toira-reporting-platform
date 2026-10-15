@@ -8,7 +8,7 @@
 
 ## 展示範圍
 
-首頁通報說明、四步驟通報流程、風險評估資料上傳介面、TOiRA 作業評估建議、Q1–Q31 常見問答，以及通報第二步的勞檢機構特殊申報入口。
+首頁通報說明、四步驟通報流程、風險評估資料上傳介面、TOiRA 作業評估建議、Q1–Q47 常見問答，以及通報第二步的勞檢機構特殊申報入口。
 
 特殊申報網站維護只列出保留的機構，可新增、編輯、移除及撤銷移除；首頁不列出勞檢機構。移除特殊申報連結不會移除通報案件所需的管轄機構資料。原型設定仍保存於目前瀏覽器；正式設定須由後端共用資料庫維護。
 
@@ -37,7 +37,9 @@ python -m http.server 18767
 - `js/data/portal_config.js`：TOiRA 與地方通報入口的預設設定。
 - `js/data/toira_work_catalog.js`：通報作業與 TOiRA 評估項目對照。
 
-Q&A 的實際畫面內容位於 `faq.html`；`js/data/qa_content.json` 與 `js/data/qa_law_articles.json` 是交付用資料快照，單獨編輯 JSON 不會自動更新畫面。
+Q&A 內容維護於 `js/data/qa_content.json`，法條全文維護於 `js/data/qa_law_articles.json`。編輯後執行 `python scripts/render_qa.py` 產生 `faq.html`，並以 `python scripts/render_qa.py --check` 檢查同步。頁面仍為靜態 HTML，停用 JavaScript 時也能逐題閱讀及展開法條；頁首與導覽外框直接維護於 `faq.html`。
+
+115 年 10 月 15 日依提供的 47 題 QA 編修稿及注意事項逐題核對補齊，並保留第 21 條之 3 的施行日期與原型功能說明。注意事項尚未確認正式公告，不提供草稿原件下載，也不將其內容包裝為已生效法規。通報的所有附件（一般附件、自行評估資料及 TOiRA 評估結果）依署內規定統一每檔 15 MB；正式後端仍須執行同一容量檢查。
 
 ## 下載文件維護
 
@@ -66,7 +68,7 @@ Q&A 的實際畫面內容位於 `faq.html`；`js/data/qa_content.json` 與 `js/d
 
 正式平台須納入「通報完成通知郵件」功能：寄給填報者，並副知管轄勞動檢查機構。郵件主旨與內文須由既有「訊息範本維護」統一管理，寄信後端依範本代碼讀取及帶入案件資料。請資訊公司依[通知郵件交付文件](docs/vendor-handoff/email-notification/README.md)及[訊息範本連動規格](docs/vendor-handoff/email-notification/template-maintenance-integration.md)實作。
 
-交付文件包含郵件版型、格式規格及 Q32 草稿。寄件信箱與部分細節尚待核定；目前主系統未接入實際寄信功能，Q32 亦未登錄至公開 Q&A。
+交付文件包含郵件版型與格式規格。Q32 已納入原型 Q&A，清楚區分正式規劃與未實際寄信的展示狀態；寄件信箱與部分細節仍待核定，主系統未接入實際寄信功能。
 
 案件詳情的「關閉」旁提供「下載通報完成檔案（PDF）」與「再次寄送通知」。PDF 為本次頁面中的展示資料快照，包含完整通報項目與附件清單；重寄收件者預設為目前登入者個人資料中的電子郵件，可自行修改，只寄至指定地址且不副知勞檢。重寄提供確認流程並明確標示未實際寄信，修改收件者不會改動個人資料。取消案件保留下載並停用完成通知重寄。正式平台須下載原郵件的同一份附件並由後端重寄，詳見[案件詳情操作交付規格](docs/vendor-handoff/email-notification/case-detail-actions.md)。
 

@@ -1,3 +1,7 @@
+// 署內附件容量規定；所有通報附件上傳入口共用每檔 15 MB 上限。
+const HH_ATTACHMENT_MAX_MB = 15;
+const HH_ATTACHMENT_MAX_BYTES = HH_ATTACHMENT_MAX_MB * 1048576;
+
 /* =========================================================
  * geo_data.js - 縣市鄉鎮勞檢機構行政區對應表及地理位置工具
  * ========================================================= */
@@ -383,9 +387,12 @@
     function handleHhAttachmentUpload(input) {
       const list = document.getElementById('hhAttachmentList');
       if (!list || !input.files || input.files.length === 0) return;
+      const rejected = [];
+      let added = 0;
 
       for (let i = 0; i < input.files.length; i++) {
         const file = input.files[i];
+        if (file.size > HH_ATTACHMENT_MAX_BYTES) { rejected.push(file.name + '：超過 ' + HH_ATTACHMENT_MAX_MB + ' MB'); continue; }
         const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
         const div = document.createElement('div');
         div.className = 'hh-attachment-item';
@@ -393,14 +400,19 @@
         div.innerHTML = `
           <span style="display:flex; align-items:center; gap:6px; color:#334155;">
             <span style="color:#0288d1;">📄</span>
-            <span class="hh-att-name">${file.name}</span>
+            <span class="hh-att-name">${portalEscape(file.name)}</span>
             <span style="color:#64748b; font-size: 12px;">(${sizeMb} MB)</span>
           </span>
           <button type="button" class="action-btn delete" title="刪除檔案" onclick="this.closest('.hh-attachment-item').remove()" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:none; background:none; color:#dc2626; cursor:pointer; font-weight:bold;">✕</button>
         `;
         list.appendChild(div);
+        added++;
       }
-      alert(`已成功加入 ${input.files.length} 筆附件檔案！`);
+      const status = document.getElementById('hhAttachmentUploadStatus');
+      if (status) {
+        status.textContent = [added ? '已加入 ' + added + ' 個檔案。' : '', ...rejected].filter(Boolean).join(' ');
+        status.style.color = rejected.length ? '#b91c1c' : '#166534';
+      }
       input.value = '';
     }
 
