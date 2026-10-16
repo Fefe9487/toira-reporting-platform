@@ -18,7 +18,7 @@
 
 ## 首頁操作教學影片
 
-首頁登入區下方提供「TOiRA危險作業風險評估及通報平台 操作教學」YouTube 影片：https://youtu.be/T96ZRnX2KhM 。首頁導覽的「操作教學」可直接移至影片區。播放器採 16:9、延遲載入、不自動播放，可全螢幕觀看，並提供另開 YouTube 的連結。嵌入網址與標題維護於 `login.html` 的 `operation-tutorial` 區塊，樣式維護於 `css/login.css`。
+首頁登入區下方提供「TOiRA危險作業風險評估及通報平台 操作教學」YouTube 影片：https://youtu.be/ypbVTuK0TvY 。首頁導覽的「操作教學」可直接移至影片區。播放器採 16:9、延遲載入、不自動播放，可全螢幕觀看，並提供另開 YouTube 的連結。嵌入網址與標題維護於 `login.html` 的 `operation-tutorial` 區塊，樣式維護於 `css/login.css`。
 
 ## 本機預覽
 
