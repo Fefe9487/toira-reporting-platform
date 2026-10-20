@@ -119,7 +119,9 @@ const HH_TOIRA_WORK_CATALOG = {
     "filming-edge": {
       "label": "高度在二公尺以上之工作場所邊緣及開口，未能設置護欄、護蓋之影視拍攝作業。",
       "assessmentIds": [
-        "HH-005"
+        "HH-005",
+        "HH-017",
+        "HH-016"
       ]
     },
     "formwork": {
