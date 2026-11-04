@@ -45,7 +45,7 @@ function getHhRiskStepHtml() {
     </details>
     <label class="risk-confirm"><input type="checkbox" id="hhRiskContentConfirmed" aria-describedby="hhRiskContentGuide">我確認評估資料涵蓋上述六項內容及本次各項危險作業，並將於作業前落實必要的預防設備與措施。</label>
     <p class="risk-retention-note">評估結果等紀錄或文件應留存三年；作業內容、方式或現場條件變更而影響評估結果時，應重新評估並修正措施。</p>
-    <div class="hazard-step-actions"><button type="button" class="v-btn v-btn-cancel" onclick="switchHazardStep(2)">上一步：選擇通報作業</button><button type="button" class="v-btn v-btn-primary" onclick="switchHazardStep(4)">下一步：資料確認通報 →</button></div>
+    <div class="hazard-step-actions"><button type="button" class="v-btn v-btn-cancel" onclick="switchHazardStep(2)">上一步：選擇危險作業</button><button type="button" class="v-btn v-btn-primary" onclick="switchHazardStep(4)">下一步：確認通報資料 →</button></div>
   </div>`;
 }
 function resetHhRiskAssessment() { hhRiskContext = ''; hhRiskMode = 'upload'; hhRiskFiles = { upload: [], toira: [] }; }

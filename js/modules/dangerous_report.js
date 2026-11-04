@@ -750,21 +750,21 @@ let currentHhStep = 1;
           <!-- 四階段進度條 -->
           <div class="flow-steps" aria-label="通報進度">
             <div class="flow-step active" id="hhStep1Indicator" aria-current="step">
-              <span class="step-num">1</span>第一步：作業／填報者資訊
+              <span class="step-num">1</span>第一步：填報作業相關資訊
             </div>
             <div class="flow-step" id="hhStep2Indicator">
-              <span class="step-num">2</span>第二步：選擇通報作業
+              <span class="step-num">2</span>第二步：選擇危險作業
             </div>
             <div class="flow-step" id="hhStep3Indicator">
               <span class="step-num">3</span>第三步：實施風險評估
             </div>
             <div class="flow-step" id="hhStep4Indicator">
-              <span class="step-num">4</span>第四步：資料確認通報
+              <span class="step-num">4</span>第四步：確認通報資料
             </div>
           </div>
 
           <!-- =========================================================
-           * 第一步 Pane：作業／填報者資訊
+           * 第一步 Pane：填報作業相關資訊
            * ========================================================= -->
           <div id="hhStep1Pane" class="step-pane active">
             <div class="dispatch-tip">
@@ -1034,13 +1034,13 @@ let currentHhStep = 1;
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
               <button type="button" class="v-btn v-btn-cancel" onclick="closeVDialog()">取消</button>
               <button type="button" class="btn-add" style="padding:9px 24px; font-size:14px;" onclick="switchHazardStep(2)">
-                下一步：設定作業期間與通報作業 ➔
+                下一步：選擇危險作業 ➔
               </button>
             </div>
           </div>
 
           <!-- =========================================================
-           * 第二步 Pane：選擇通報作業 (預期作業期間移至此: 需求 2; 選起訖後自動關閉: 需求 7)
+           * 第二步 Pane：選擇危險作業 (預期作業期間移至此: 需求 2; 選起訖後自動關閉: 需求 7)
            * ========================================================= -->
           <div id="hhStep2Pane" class="step-pane">
             <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:12px 16px; border-radius:6px; color:#1e40af; font-size: 13px; line-height:1.6;">
@@ -1142,7 +1142,7 @@ let currentHhStep = 1;
             <!-- 第二步底部按鈕 -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
               <button type="button" class="btn-search" style="background:#64748b; color:#ffffff;" onclick="switchHazardStep(1)">
-                ⬅ 上一步：作業／填報者資訊
+                ⬅ 上一步：填報作業相關資訊
               </button>
               <button type="button" class="btn-add" style="padding:9px 24px; font-size:14px;" onclick="switchHazardStep(3)">
                 下一步：實施風險評估 →
@@ -1151,12 +1151,12 @@ let currentHhStep = 1;
           </div>
 
           <!-- =========================================================
-           * 第四步 Pane：資料確認通報
+           * 第四步 Pane：確認通報資料
            * ========================================================= -->
           ${getHhRiskStepHtml()}
           <div id="hhStep4Pane" class="step-pane">
             <div style="background:#fef3c7; border:1px solid #fde68a; padding:14px 18px; border-radius:6px; color:#92400e; font-size: 15px; line-height:1.65;">
-              <strong>第四步：資料確認通報</strong> 請核對作業資訊、風險評估結果與附件。確認內容符合本次實際作業後，再點擊「確認完成通報」。
+              <strong>第四步：確認通報資料</strong> 請核對作業資訊、風險評估結果與附件。確認內容符合本次實際作業後，再點擊「確認完成通報」。
             </div>
 
             <!-- 基本資料彙整呈現容器 -->
