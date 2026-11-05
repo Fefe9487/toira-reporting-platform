@@ -162,6 +162,7 @@
     field('產業園區', data.industrialPark || '否');
     paragraph('通報者與作業單位', true);
     field('通報者事業單位', data.notifierCompany);
+    field('通報人(職稱)', data.notifierName);
     field('通報者電話', data.notifierPhone);
     field('電子郵件', data.email);
     field('通報關係', data.relation);
@@ -187,6 +188,7 @@
       field('備註', location.note);
     });
     list('一般附件清單', data.attachments);
+    field('風險評估方式', data.riskAssessment?.mode === 'toira' ? 'TOiRA 線上風險評估' : data.riskAssessment?.mode === 'upload' ? '自行上傳風險評估資料' : '未提供');
     list('風險評估附件清單', data.riskFiles);
     paragraph('附件清單僅列名稱；原始風險評估與佐證資料請於平台查閱。案件目前狀態以平台為準。');
 

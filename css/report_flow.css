@@ -689,3 +689,35 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .toira-recommendations > .toira-recommendations-unmapped { color:#8a4b26; background:#fff7ed; padding:10px 12px; margin:12px 0; }
 
 .toira-work-context { font-size:13px; line-height:1.75; margin:0 0 8px; color:#365766; }
+
+
+/* Hazard report: field alignment and open, document-style review. */
+.hazard-flow #hhStep1Pane .form-field-group > label {
+  width:224px !important; min-width:224px !important; max-width:224px !important;
+  white-space:nowrap;
+}
+.hazard-flow #hhStep1Pane .form-field-group > input,
+.hazard-flow #hhStep1Pane .form-field-group > select,
+.hazard-flow #hhStep1Pane .form-field-group > textarea,
+.hazard-flow #hhStep1Pane .form-field-group > div { min-width:0; }
+.hazard-flow #hhStep4Pane .hh-review-intro { margin:0; }
+.hazard-flow #hhStep4Pane .hh-review-intro h3 { margin:0 0 7px; color:#1e3a50; font-size:20px; }
+.hazard-flow #hhStep4Pane .hh-review-intro p { margin:0; color:#607281; font-size:14px; line-height:1.8; }
+.hazard-flow #hhStep4Pane .hh-review-section { padding:22px 0 0; margin:0 0 4px; }
+.hazard-flow #hhStep4Pane #hhSummaryContainer > .hh-review-section:first-child,
+.hazard-flow #hhStep4Pane > .hh-review-section { padding-top:8px; margin:0; }
+.hazard-flow #hhStep4Pane .hh-review-section h4 { margin:0 0 18px; padding:0 0 10px; border-bottom:1px solid #dce5eb; color:#294e60; font-size:17px; line-height:1.5; }
+.hazard-flow #hhStep4Pane .hh-review-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:17px 32px; margin:0; }
+.hazard-flow #hhStep4Pane .hh-review-field { min-width:0; }
+.hazard-flow #hhStep4Pane .hh-review-wide { grid-column:1 / -1; }
+.hazard-flow #hhStep4Pane dt { color:#647786; font-size:13px; line-height:1.5; margin:0 0 4px; }
+.hazard-flow #hhStep4Pane dd { color:#263d4c; font-size:15.5px; line-height:1.75; margin:0; overflow-wrap:anywhere; white-space:pre-wrap; }
+.hazard-flow #hhStep4Pane dd ul { margin:0; padding-left:20px; }
+.hazard-flow #hhStep4Pane .hh-review-item { color:#263d4c; font-size:15px; line-height:1.75; overflow-wrap:anywhere; margin:0 0 16px; }
+.hazard-flow #hhStep4Pane .hh-review-item strong { color:#365766; font-size:15.5px; }
+.hazard-flow #hhStep4Pane .hh-review-item ul { margin:6px 0 0; padding-left:24px; }
+@media (max-width:720px) {
+  .hazard-flow #hhStep1Pane .form-field-group { flex-direction:column; align-items:stretch !important; gap:6px; }
+  .hazard-flow #hhStep1Pane .form-field-group > label { width:auto !important; min-width:0 !important; max-width:none !important; text-align:left; white-space:normal; }
+  .hazard-flow #hhStep4Pane .hh-review-grid { grid-template-columns:minmax(0,1fr); }
+}

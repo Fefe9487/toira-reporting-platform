@@ -2,65 +2,83 @@ let currentHhStep = 1;
 /* =========================================================
  * dangerous_report.js - 危險作業線上通報四階段通報流程 (Step 1~4)
  * ========================================================= */
-    function switchHazardStep(targetStep) {
-      // 關閉日曆彈窗以防懸浮
-      closeHhDateRangePicker();
+    function validateHhWorkInfo() {
+        const city = document.getElementById('hhCitySelect')?.value?.trim();
+        const primaryUnit = document.getElementById('hhPrimaryUnit')?.value?.trim();
+        const contact = document.getElementById('hhContact')?.value?.trim();
+        const phone = document.getElementById('hhPhone')?.value?.trim();
+        const notifierCompany = document.getElementById('hhNotifierCompany')?.value?.trim();
+        const notifierPhone = document.getElementById('hhNotifierPhone')?.value?.trim();
 
-      // 第一步前往第二步時基本驗證
-      if (targetStep === 2 && currentHhStep === 1) {
-        const city = document.getElementById('hhCitySelect')?.value;
-        const primaryUnit = document.getElementById('hhPrimaryUnit')?.value;
-        const contact = document.getElementById('hhContact')?.value;
-        const phone = document.getElementById('hhPhone')?.value;
-        const notifierCompany = document.getElementById('hhNotifierCompany')?.value;
-        const notifierPhone = document.getElementById('hhNotifierPhone')?.value;
-
-        // 檢查主地址
-        const firstAddr = document.querySelector('.hh-addr-val')?.value;
 
         if (!city) {
-          alert('請選擇作業所在監管縣市！');
-          return;
+          alert('請選擇作業縣市！');
+          return false;
         }
         const addrVal = document.getElementById('hhEngineeringAddress')?.value?.trim();
         const gpsVal = document.getElementById('hhEngineeringGps')?.value?.trim();
         if (!addrVal && !gpsVal) {
           alert('作業地址或 GPS 位置請擇一填寫！');
-          return;
+          return false;
         }
         if (!document.getElementById('hhDistSelect')?.value) {
           alert('請選擇鄉鎮市區');
-          return;
+          return false;
         }
         if (document.getElementById('hhInPark')?.checked && !document.getElementById('hhPark')?.value) {
           alert('請選擇與所在地縣市相符的產業園區');
-          return;
+          return false;
         }
         if (!document.getElementById('hhAdminUnit')?.value) {
           alert('請選擇所屬勞動檢查單位');
-          return;
+          return false;
         }
         if (!primaryUnit) {
-          alert('請輸入作業單位！');
-          return;
+          alert('請輸入實際作業者的事業單位名稱！');
+          return false;
         }
         if (document.getElementById('hhRelation')?.checked) {
           const contractorNames = [...document.querySelectorAll('#hhContractorRows .contractor-input')]
             .map(inp => inp.value.trim()).filter(Boolean);
           if (!contractorNames.length) {
             alert('交付承攬時請先以＋新增至少一個承攬商');
-            return;
+            return false;
           }
         }
         if (!contact || !phone) {
-          alert('請輸入現場聯絡人姓名與聯絡電話！');
-          return;
+          alert('請輸入工作場所負責人（聯絡人）姓名與聯絡電話！');
+          return false;
         }
-        if (!notifierCompany) {
+        if (!notifierCompany?.trim()) {
           alert('請輸入通報者事業單位名稱！');
-          return;
+          return false;
         }
-      }
+        if (!notifierPhone?.trim()) {
+          alert('請輸入通報者聯絡電話！');
+          document.getElementById('hhNotifierPhone')?.focus();
+          return false;
+        }
+        const notifierName = document.getElementById('hhNotifierName');
+        if (!notifierName?.value.trim()) {
+          alert('請輸入通報人（職稱）！');
+          notifierName?.focus();
+          return false;
+        }
+        const workers = document.getElementById('hhWorkerCount');
+        if (!workers || !/^\d+$/.test(workers.value) || Number(workers.value) < 1) {
+          alert('請輸入大於零的整數作業人數！');
+          workers?.focus();
+          return false;
+        }
+      return true;
+    }
+
+    function switchHazardStep(targetStep) {
+      // 關閉日曆彈窗以防懸浮
+      closeHhDateRangePicker();
+
+      // 第一步前往第二步時基本驗證
+      if (targetStep === 2 && currentHhStep === 1 && !validateHhWorkInfo()) return;
 
       // 第二步前往第三步時驗證
       if (targetStep === 3 && currentHhStep === 2) {
@@ -157,29 +175,18 @@ let currentHhStep = 1;
       const notifierCompany = document.getElementById('hhNotifierCompany')?.value || '未填寫';
       const notifierName = document.getElementById('hhNotifierName')?.value || '未填寫';
       const notifierPhone = document.getElementById('hhNotifierPhone')?.value || '未填寫';
-      const relation = document.getElementById('hhRelation')?.checked ? '交付承攬' : '自行作業';
       const inPark = document.getElementById('hhInPark')?.checked;
       const parkName = document.getElementById('hhPark')?.value || '';
 
       // 彙整作業地址、GPS 與附加點位
-      const locList = [];
       const mainAddr = document.getElementById('hhEngineeringAddress')?.value?.trim() || '';
       const mainGps = document.getElementById('hhEngineeringGps')?.value?.trim() || '';
-      if (mainAddr || mainGps) {
-        let str = '<strong>作業地址：</strong> ' + portalEscape(mainAddr || '未填寫地址');
-        if (mainGps) str += ` <span style="color:#0288d1; font-weight:600; font-size: 14.5px;">(GPS: ${portalEscape(mainGps)})</span>`;
-        locList.push(str);
-      }
+      const extraPoints = [];
       document.querySelectorAll('#hhExtraPointsContainer .extra-point-row').forEach((row, idx) => {
         const desc = row.querySelector('.extra-point-desc')?.value?.trim() || '';
         const gps = row.querySelector('.extra-point-gps')?.value?.trim() || '';
-        if (desc || gps) {
-          let str = `<strong>附加點位 ${idx + 1}：</strong> ${portalEscape(desc || '未填寫說明')}`;
-          if (gps) str += ` <span style="color:#0288d1; font-weight:600; font-size: 14.5px;">(GPS: ${portalEscape(gps)})</span>`;
-          locList.push(str);
-        }
+        if (desc || gps) extraPoints.push(`附加點位 ${idx + 1}：${portalEscape(desc || '未填寫說明')}${gps ? ` (GPS: ${portalEscape(gps)})` : ''}`);
       });
-      const locationSummary = locList.length > 0 ? locList.join('<br>') : '未填寫作業地點';
 
       // 彙整跨轄區勞檢單位 (需求 2)
       const isCross = document.getElementById('hhCrossCheck')?.checked;
@@ -197,25 +204,41 @@ let currentHhStep = 1;
         if (inp.value.trim()) contractors.push(inp.value.trim());
       });
 
-      summaryContainer.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:18px; font-size: 15.5px; line-height: 1.7;">
-          <div><strong>作業名稱：</strong> <span style="color:#1d4ed8; font-weight:700; font-size: 17px;">${portalEscape(workName)}</span></div>
-          <div><strong>預期作業期間：</strong> <span style="color:#0288d1; font-weight:600;">${portalEscape(startDate)} ～ ${portalEscape(endDate)}</span></div>
-          <div><strong>所在地區與管轄單位：</strong> <span style="color:#059669; font-weight:600;">${portalEscape(city)} ${portalEscape(dist)} (${portalEscape(admin)})</span></div>
-          <div><strong>產業園區：</strong> ${inPark ? portalEscape(parkName || '已勾選，尚未選擇園區') : '否'}</div>
-          <div><strong>跨轄區副知機關：</strong> ${isCross ? (crossAdmins.length > 0 ? crossAdmins.map(portalEscape).join('、') : '<span style="color:#f59e0b;">已勾選跨轄區，未指定副知單位</span>') : '無 (非跨轄區)'}</div>
-          <div style="grid-column:span 2;"><strong>作業地點與 GPS 座標：</strong> <div style="margin-top:6px; padding:12px 16px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; line-height:1.75; font-size: 15px; color:#334155;">${locationSummary}</div></div>
-          <div><strong>現場聯絡人：</strong> ${portalEscape(contact)} (電話: ${portalEscape(phone)})</div>
-          <div><strong>現場作業人數：</strong> 約 ${portalEscape(workers)} 人</div>
-          <div style="grid-column:span 2;"><strong>一般附件清單：</strong> ${attList.length > 0 ? attList.map(a => `<span style="display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:4px 10px; border-radius:4px; margin-right:8px; margin-bottom:4px; font-size: 14px;">📎 ${portalEscape(a)}</span>`).join('') : '無附件'}</div>
-          <div><strong>作業單位：</strong> ${portalEscape(primaryUnit)} (統編: ${portalEscape(taxId)})</div>
-          <div><strong>承攬商：</strong> ${contractors.length > 0 ? contractors.map(portalEscape).join('、') : '無承攬商 (作業單位自辦)'}</div>
-          <div style="grid-column:span 2; border-top:1px dashed #cbd5e1; padding-top:10px; margin-top:6px;">
-            <strong>通報者資訊：</strong> ${portalEscape(notifierCompany)} (行動電話: ${notifierPhone || '未填寫'}, 關係: ${portalEscape(relation)})
-          </div>
-          <div style="grid-column:span 2;"><strong>備註：</strong> <span style="color:#475569;">${portalEscape(note)}</span></div>
-        </div>
-      `;
+      const field = (label, value, wide = false) => `<div class="hh-review-field${wide ? ' hh-review-wide' : ''}"><dt>${label}</dt><dd>${value}</dd></div>`;
+      const section = (title, fields) => `<section class="hh-review-section"><h4>${title}</h4><dl class="hh-review-grid">${fields.join('')}</dl></section>`;
+      summaryContainer.innerHTML = [
+        section('通報者資訊', [
+          field('事業單位名稱', portalEscape(notifierCompany), true),
+          field('通報人(職稱)', portalEscape(notifierName)),
+          field('聯絡電話', portalEscape(notifierPhone)),
+          field('是否交付承攬', document.getElementById('hhRelation')?.checked ? '是' : '否')
+        ]),
+        section('作業者資訊', [
+          field('事業單位名稱(實際作業者)', portalEscape(primaryUnit || '未填寫'), true),
+          field('承攬商', contractors.length ? contractors.map(portalEscape).join('、') : '無承攬商 (作業單位自辦)', true),
+          field('統一編號', portalEscape(taxId)),
+          field('工作場所負責人(聯絡人)', portalEscape(contact || '未填寫')),
+          field('聯絡電話', portalEscape(phone || '未填寫')),
+          field('作業人數', portalEscape(workers) + ' 人'),
+          field('備註', portalEscape(note), true)
+        ]),
+        section('所在地區與管轄單位', [
+          field('作業縣市／鄉鎮市區', portalEscape(city + ' ' + dist)),
+          field('所屬勞動檢查單位', portalEscape(admin || '未填寫'), true)
+        ]),
+        section('作業位置', [
+          field('作業地址', portalEscape(mainAddr || '未填寫'), true),
+          field('產業園區', inPark ? portalEscape(parkName || '已勾選，尚未選擇園區') : '否'),
+          field('GPS位置', portalEscape(mainGps || '未填寫')),
+          field('附加點位', extraPoints.length ? extraPoints.join('<br>') : '無', true),
+          field('跨轄區副知機關', isCross ? (crossAdmins.length ? crossAdmins.map(portalEscape).join('、') : '已勾選跨轄區，未指定副知單位') : '無 (非跨轄區)', true),
+          field('一般附件清單', attList.length ? attList.map(portalEscape).join('、') : '無附件', true)
+        ]),
+        section('作業資料', [
+          field('作業名稱', portalEscape(workName), true),
+          field('預期作業期間', portalEscape(startDate) + ' ～ ' + portalEscape(endDate))
+        ])
+      ].join('');
 
       // 收集選取項目
       const selectedHtml = [];
@@ -227,13 +250,13 @@ let currentHhStep = 1;
         if (mainCb?.checked || checkedSubs.length > 0) {
           let subList = '';
           if (checkedSubs.length > 0) {
-            subList = `<ul style="margin:6px 0 0 24px; color:#334155; font-size: 15px; line-height: 1.65;">${checkedSubs.map(s => `<li style="margin-bottom:3px;">${portalEscape(s.textContent.trim())}</li>`).join('')}</ul>`;
+            subList = `<ul>${checkedSubs.map(s => `<li>${portalEscape(s.textContent.trim())}</li>`).join('')}</ul>`;
           } else {
-            subList = '<div style="margin:6px 0 0 24px; color:#64748b; font-size: 14.5px;">（已申報該大類全部項目）</div>';
+            subList = '<p>（已申報該大類全部項目）</p>';
           }
           selectedHtml.push(`
-            <div style="margin-bottom:10px; padding: 10px 14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px;">
-              <strong style="color:#2563eb; font-size: 16.5px;">${portalEscape(mainLabel)}</strong>
+            <div class="hh-review-item">
+              <strong>${portalEscape(mainLabel)}</strong>
               ${subList}
             </div>
           `);
@@ -489,7 +512,7 @@ let currentHhStep = 1;
       if (caseParam && typeof caseParam === 'object') {
         if (caseParam.caseNo && DEMO_HAZARD_CASES[caseParam.caseNo]) {
           const matched = JSON.parse(JSON.stringify(DEMO_HAZARD_CASES[caseParam.caseNo]));
-          if (caseParam.workName) matched.workName = caseParam.workName;
+          if (!matched.workName && caseParam.workName) matched.workName = caseParam.workName;
           return matched;
         }
         return {
@@ -535,6 +558,8 @@ let currentHhStep = 1;
       // 1. 通報者資訊
       const notComp = document.getElementById('hhNotifierCompany');
       const notPhone = document.getElementById('hhNotifierPhone');
+      const notName = document.getElementById('hhNotifierName');
+      if (notName) notName.value = data.notifierName || '';
       if (notPhone) notPhone.value = data.notifierPhone || '';
       if (notComp) {
         if (data.notifierCompany) notComp.value = data.notifierCompany;
@@ -629,7 +654,7 @@ let currentHhStep = 1;
             const item = document.createElement('div');
             item.className = 'hh-att-item';
             item.style.cssText = 'display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; padding:3px 8px; font-size: 12px; color:#1e293b;';
-            item.innerHTML = `📎 <span class="hh-att-name">${fname}</span> <button type="button" onclick="this.parentElement.remove()" style="border:none; background:transparent; color:#ef4444; cursor:pointer; font-weight:bold; padding:0 2px;">×</button>`;
+            item.innerHTML = `📎 <span class="hh-att-name">${portalEscape(fname)}</span> <button type="button" onclick="this.parentElement.remove()" style="border:none; background:transparent; color:#ef4444; cursor:pointer; font-weight:bold; padding:0 2px;">×</button>`;
             listEl.appendChild(item);
           });
         }
@@ -687,6 +712,7 @@ let currentHhStep = 1;
 
     function submitHazardFlow() {
       if (currentHhStep !== 4) return;
+      if (!validateHhWorkInfo()) { switchHazardStep(1); if (!document.getElementById('hhNotifierName')?.value.trim()) document.getElementById('hhNotifierName')?.focus(); return; }
       if (!validateHhRiskAssessment()) { switchHazardStep(3); return; }
       const data = collectHhReportData();
       const existing = DEMO_HAZARD_CASES[currentHazardCaseNo];
@@ -718,7 +744,7 @@ let currentHhStep = 1;
       const crossAdmins = [...document.querySelectorAll('.cross-admin-cb:checked')].map(cb=>cb.value);
       const firstLocation = {address:value('hhEngineeringAddress'),gps:value('hhEngineeringGps'),contact:value('hhContact'),phone:value('hhPhone'),workers:value('hhWorkerCount'),note:value('hhNote'),isCross:document.getElementById('hhCrossCheck').checked,crossAdmins};
       const extraLocations = [...document.querySelectorAll('#hhExtraPointsContainer .extra-point-row')].map(row=>({address:row.querySelector('.extra-point-desc')?.value.trim() || '',gps:row.querySelector('.extra-point-gps')?.value.trim() || ''})).filter(loc=>loc.address || loc.gps);
-      return {notifierCompany:value('hhNotifierCompany'),notifierPhone:value('hhNotifierPhone'),relation:document.getElementById('hhRelation').checked?'交付承攬':'自行作業',contractors:[...document.querySelectorAll('.contractor-input')].map(inp=>inp.value.trim()).filter(Boolean),city:value('hhCitySelect'),dist:value('hhDistSelect'),adminOffice:value('hhAdminUnit'),industrialPark:document.getElementById('hhInPark').checked?value('hhPark'):'',contractorUnit:value('hhPrimaryUnit'),contractorTaxId:value('hhTaxId'),workName:value('hhWorkName'),startDate:value('hhStartDate'),endDate:value('hhEndDate'),locations:[firstLocation,...extraLocations],categories:[...document.querySelectorAll('#hhItemsGroup .checkbox-item')].filter(item=>item.querySelector('.sub-items-container input:checked')).map(item=>item.dataset.category),subItems:[...document.querySelectorAll('#hhItemsGroup .sub-items-container input:checked')].map(cb=>cb.closest('label').textContent.trim()),attachments:[...document.querySelectorAll('#hhAttachmentList .hh-att-name')].map(el=>el.textContent.trim()),riskFiles:riskAssessment.files,riskAssessment};
+      return {notifierCompany:value('hhNotifierCompany'),notifierName:value('hhNotifierName'),notifierPhone:value('hhNotifierPhone'),relation:document.getElementById('hhRelation').checked?'交付承攬':'自行作業',contractors:[...document.querySelectorAll('.contractor-input')].map(inp=>inp.value.trim()).filter(Boolean),city:value('hhCitySelect'),dist:value('hhDistSelect'),adminOffice:value('hhAdminUnit'),industrialPark:document.getElementById('hhInPark').checked?value('hhPark'):'',contractorUnit:value('hhPrimaryUnit'),contractorTaxId:value('hhTaxId'),workName:value('hhWorkName'),startDate:value('hhStartDate'),endDate:value('hhEndDate'),locations:[firstLocation,...extraLocations],categories:[...document.querySelectorAll('#hhItemsGroup .checkbox-item')].filter(item=>item.querySelector('.sub-items-container input:checked')).map(item=>item.dataset.category),subItems:[...document.querySelectorAll('#hhItemsGroup .sub-items-container input:checked')].map(cb=>cb.closest('label').textContent.trim()),attachments:[...document.querySelectorAll('#hhAttachmentList .hh-att-name')].map(el=>el.textContent.trim()),riskFiles:riskAssessment.files,riskAssessment};
     }
 
     /**
@@ -750,7 +776,7 @@ let currentHhStep = 1;
           <!-- 四階段進度條 -->
           <div class="flow-steps" aria-label="通報進度">
             <div class="flow-step active" id="hhStep1Indicator" aria-current="step">
-              <span class="step-num">1</span>第一步：填報作業相關資訊
+              <span class="step-num">1</span>第一步：填報作業資訊
             </div>
             <div class="flow-step" id="hhStep2Indicator">
               <span class="step-num">2</span>第二步：選擇危險作業
@@ -768,7 +794,7 @@ let currentHhStep = 1;
            * ========================================================= -->
           <div id="hhStep1Pane" class="step-pane active">
             <div class="dispatch-tip">
-              <strong>📋 步驟一說明：</strong> 請先填寫通報者資訊、作業所在地與管轄單位、作業事業單位及作業位置。填寫完畢後點擊「下一步」設定作業期間與選擇危險作業。
+              <strong>📋 步驟一說明：</strong> 請先填寫通報者資訊、作業者資訊、作業所在地與管轄單位及作業位置。填寫完畢後點擊「下一步」設定作業期間與選擇危險作業。
             </div>
 
             <!-- 通報者資訊 (移到最上面) -->
@@ -783,17 +809,62 @@ let currentHhStep = 1;
                   <input type="text" class="search-input" id="hhNotifierCompany" value="台灣營造事業單位股份有限公司" placeholder="預設帶入第一個作業單位，可自行修改" oninput="this.dataset.userEdited='1'" required>
                 </div>
                 <div class="form-field-group">
-                  <label>行動電話 <span style="font-size: 12px; font-weight:normal; color:#64748b;">(選填)</span></label>
-                  <input type="tel" class="search-input" id="hhNotifierPhone" value="0911-223-344" placeholder="請輸入行動電話">
+                  <label>通報人(職稱) <span class="form-req">*</span></label>
+                  <input type="text" class="search-input" id="hhNotifierName" placeholder="請輸入通報人及職稱" autocomplete="name" required>
+                </div>
+                <div class="form-field-group">
+                  <label>聯絡電話 <span class="form-req">*</span></label>
+                  <input type="tel" class="search-input" id="hhNotifierPhone" value="0911-223-344" placeholder="請輸入聯絡電話" required>
                 </div>
                 <div class="form-field-group" style="align-items:flex-start;">
-                  <label style="margin-top:4px;">是否為交付承攬</label>
+                  <label style="margin-top:4px;">是否交付承攬</label>
                   <div style="flex:1;">
                     <label style="display:inline-flex; align-items:center; gap:8px; font-weight:500; cursor:pointer;">
                       <input type="checkbox" id="hhRelation" onchange="onHhRelationChange()"> 是
                     </label>
                     <div style="font-size:12px; color:#64748b; margin-top:4px;">未勾選為自行作業；勾選後為交付承攬。</div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 作業者資訊與承攬清單 -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+              <h4 style="margin:0 0 12px 0; color:#1e293b; font-size: 14.5px; display:flex; align-items:center; gap:8px;">
+                <span style="display:inline-block; width:4px; height:16px; background:#2563eb; border-radius:2px;"></span>
+                作業者資訊
+              </h4>
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <div class="form-field-group">
+                  <label>事業單位名稱(實際作業者) <span class="form-req">*</span></label>
+                  <div style="flex:1; display:flex; gap:8px; align-items:center;">
+                    <input type="text" class="search-input" id="hhPrimaryUnit" value="台灣營造事業單位股份有限公司" oninput="syncHhCompanyFromUnit()" required style="flex:1;">
+                    <button type="button" title="新增承攬商" onclick="addContractorUnit()" style="width:36px; height:36px; flex:none; display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#1e293b; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-weight:700; font-size:18px;">＋</button>
+                  </div>
+                </div>
+                <div id="hhContractorRows" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <div class="form-field-group">
+                  <label>統一編號</label>
+                  <input type="text" class="search-input" id="hhTaxId" value="16541333" placeholder="8碼統編">
+                </div>
+                <div class="form-field-group">
+                  <label>工作場所負責人(聯絡人) <span class="form-req">*</span></label>
+                  <input type="text" class="search-input" id="hhContact" value="陳主任" placeholder="請輸入現場聯絡人姓名" required>
+                </div>
+                <div class="form-field-group">
+                  <label>聯絡電話 <span class="form-req">*</span></label>
+                  <input type="tel" class="search-input" id="hhPhone" value="0933-112-233" placeholder="手機或現場電話" required>
+                </div>
+                <div class="form-field-group">
+                  <label>作業人數 <span class="form-req">*</span></label>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <input type="number" class="search-input" id="hhWorkerCount" value="18" min="1" style="width:90px;">
+                    <span style="color:#64748b;">人</span>
+                  </div>
+                </div>
+                <div class="form-field-group">
+                  <label>備註</label>
+                  <textarea class="search-input" id="hhNote" rows="2" maxlength="300" placeholder="300字以內">地下深度28米連續壁施作，每日派員確認支撐系統與地下水位。</textarea>
                 </div>
               </div>
             </div>
@@ -864,28 +935,6 @@ let currentHhStep = 1;
               </div>
             </div>
 
-            <!-- 作業單位資訊與承攬清單 (移到所在地區與管轄單位下面) -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-              <h4 style="margin:0 0 12px 0; color:#1e293b; font-size: 14.5px; display:flex; align-items:center; gap:8px;">
-                <span style="display:inline-block; width:4px; height:16px; background:#2563eb; border-radius:2px;"></span>
-                作業單位資訊
-              </h4>
-              <div style="display:flex; flex-direction:column; gap:14px;">
-                <div class="form-field-group">
-                  <label>作業單位 <span class="form-req">*</span></label>
-                  <div style="flex:1; display:flex; gap:8px; align-items:center;">
-                    <input type="text" class="search-input" id="hhPrimaryUnit" value="台灣營造事業單位股份有限公司" oninput="syncHhCompanyFromUnit()" required style="flex:1;">
-                    <button type="button" title="新增承攬商" onclick="addContractorUnit()" style="width:36px; height:36px; flex:none; display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#1e293b; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-weight:700; font-size:18px;">＋</button>
-                  </div>
-                </div>
-                <div id="hhContractorRows" style="display:flex; flex-direction:column; gap:8px;"></div>
-                <div class="form-field-group">
-                  <label>統一編號</label>
-                  <input type="text" class="search-input" id="hhTaxId" value="16541333" placeholder="8碼統編">
-                </div>
-              </div>
-            </div>
-
             <!-- 作業位置 (需求 2: 作業地址和輸入框在同一行，GPS也是) -->
             <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
               <!-- 區塊標題與標籤 (地址或 GPS 擇一必填) -->
@@ -926,7 +975,7 @@ let currentHhStep = 1;
                   <label style="margin-top:7px !important;">GPS位置</label>
                   <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                      <input type="text" class="search-input hh-gps-val" id="hhEngineeringGps" value="25.0708356, 121.4504537" placeholder="經度, 緯度座標" style="max-width:280px; flex:1;">
+                      <input type="text" class="search-input hh-gps-val" id="hhEngineeringGps" value="25.0708356, 121.4504537" placeholder="緯度, 經度座標" style="max-width:280px; flex:1;">
                       <button type="button" class="btn-search" style="padding:7px 13px; background:#e2e8f0; color:#1e293b; font-size: 13px; font-weight:600; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; white-space:nowrap;" onclick="getHhBrowserLocation()">
                         使用瀏覽器取得定位
                       </button>
@@ -999,34 +1048,7 @@ let currentHhStep = 1;
                   </div>
                 </div>
 
-                <!-- 現場管理人員與人數 -->
-                <div style="border-top:1px dashed #e2e8f0; padding-top:14px;">
-                  <h4 style="margin:0 0 10px 0; color:#1e293b; font-size:14px; display:flex; align-items:center; gap:6px;">
-                    <span style="display:inline-block; width:4px; height:14px; background:#2563eb; border-radius:2px;"></span>
-                    現場管理人員與人數
-                  </h4>
-                  <div style="display:flex; flex-direction:column; gap:14px;">
-                    <div class="form-field-group">
-                      <label>現場聯絡人 <span class="form-req">*</span></label>
-                      <input type="text" class="search-input" id="hhContact" value="陳主任" placeholder="請輸入現場聯絡人姓名" required>
-                    </div>
-                    <div class="form-field-group">
-                      <label>聯絡電話 <span class="form-req">*</span></label>
-                      <input type="tel" class="search-input" id="hhPhone" value="0933-112-233" placeholder="手機或現場電話" required>
-                    </div>
-                    <div class="form-field-group">
-                      <label>現場作業人數 <span class="form-req">*</span></label>
-                      <div style="display:flex; align-items:center; gap:6px;">
-                        <input type="number" class="search-input" id="hhWorkerCount" value="18" min="1" style="width:90px;">
-                        <span style="color:#64748b;">人</span>
-                      </div>
-                    </div>
-                    <div class="form-field-group">
-                      <label>備註</label>
-                      <textarea class="search-input" id="hhNote" rows="2" maxlength="300" placeholder="300字以內">地下深度28米連續壁施作，每日派員確認支撐系統與地下水位。</textarea>
-                    </div>
-                  </div>
-                </div>
+
               </div>
             </div>
 
@@ -1137,12 +1159,12 @@ let currentHhStep = 1;
               </div>
             </div>
 
-            <aside class="local-notice"><strong>所在地區勞動檢查機構若有特殊通報作業者，請至相關網站辦理</strong><p>請依作業所在地及管轄單位，選用下列通報入口。以下連結另開新分頁。</p><div id="hhOfficeLinks" class="office-links"></div></aside>
+            <aside class="local-notice"><strong>作業所在地勞動檢查機構如另有通報規定，請至相關網站辦理。</strong><p>請依作業所在地及管轄單位，選用下列通報入口。以下連結另開新分頁。</p><div id="hhOfficeLinks" class="office-links"></div></aside>
 
             <!-- 第二步底部按鈕 -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
               <button type="button" class="btn-search" style="background:#64748b; color:#ffffff;" onclick="switchHazardStep(1)">
-                ⬅ 上一步：填報作業相關資訊
+                ⬅ 上一步：填報作業資訊
               </button>
               <button type="button" class="btn-add" style="padding:9px 24px; font-size:14px;" onclick="switchHazardStep(3)">
                 下一步：實施風險評估 →
@@ -1155,29 +1177,13 @@ let currentHhStep = 1;
            * ========================================================= -->
           ${getHhRiskStepHtml()}
           <div id="hhStep4Pane" class="step-pane">
-            <div style="background:#fef3c7; border:1px solid #fde68a; padding:14px 18px; border-radius:6px; color:#92400e; font-size: 15px; line-height:1.65;">
-              <strong>第四步：確認通報資料</strong> 請核對作業資訊、風險評估結果與附件。確認內容符合本次實際作業後，再點擊「確認完成通報」。
+            <div class="hh-review-intro">
+              <h3>確認通報資料</h3>
+              <p>請核對作業資訊、風險評估結果與附件，確認符合本次實際作業後再送出。</p>
             </div>
-
-            <!-- 基本資料彙整呈現容器 -->
-            <div>
-              <h4 style="margin:0 0 10px 0; color:#1e293b; font-size: 16.5px; display:flex; align-items:center; gap:8px;">
-                <span style="display:inline-block; width:4px; height:18px; background:#2563eb; border-radius:2px;"></span>
-                資訊確認
-              </h4>
-              <div id="hhSummaryContainer"></div>
-            </div>
-
-            <!-- 已選通報作業 (原已選定通報危險作業項目) -->
-            <div>
-              <h4 style="margin:0 0 10px 0; color:#1e293b; font-size: 16.5px; display:flex; align-items:center; gap:8px;">
-                <span style="display:inline-block; width:4px; height:18px; background:#059669; border-radius:2px;"></span>
-                已選通報作業
-              </h4>
-              <div id="hhSelectedItemsSummary"></div>
-            </div>
-
-            <section><h4>風險評估資料</h4><div id="hhRiskSummaryContainer"></div></section>
+            <div id="hhSummaryContainer"></div>
+            <section class="hh-review-section"><h4>已選通報作業</h4><div id="hhSelectedItemsSummary"></div></section>
+            <section class="hh-review-section"><h4>風險評估資料</h4><div id="hhRiskSummaryContainer"></div></section>
 
             <!-- 第四步底部按鈕 -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
@@ -1223,10 +1229,12 @@ let currentHhStep = 1;
     /**
      * 危險作業線上通報：案件詳情檢視 (參考 2026_osaha-main/sp_detail.html)
      */
+    const HH_DETAIL_WORK_IDS = {"墜落": ["roof", "rope", "tower-crane", "derrick-crane", "construction-lift", "gondola", "filming-edge"], "倒塌": ["formwork", "scaffold", "deep-excavation"], "火災爆炸": ["petrochemical", "filming-explosives"], "局限空間": ["sewer", "wastewater", "fermentation", "hot-spring"], "溺斃": ["filming-water"]};
+
     function openHazardCaseDetail(caseNo, defaultWorkName) {
       const data = Object.prototype.hasOwnProperty.call(DEMO_HAZARD_CASES, caseNo) ? DEMO_HAZARD_CASES[caseNo] : null;
       if (!data) { alert('找不到此案件，請返回案件列表重新查詢。'); return; }
-      if (defaultWorkName && (!data.workName || data.workName.includes('高架橋梁'))) {
+      if (defaultWorkName && !data.workName) {
         data.workName = defaultWorkName;
       }
       ensureHazardCompletionNotice(data);
@@ -1236,9 +1244,9 @@ let currentHhStep = 1;
       }
 
       const loc0 = (data.locations && data.locations[0]) || {};
-      const primaryContact = loc0.contact || '陳主任';
-      const primaryPhone = loc0.phone || '0933-112-233';
-      const primaryWorkers = loc0.workers || '18';
+      const primaryContact = loc0.contact || '未填寫';
+      const primaryPhone = loc0.phone || '未填寫';
+      const primaryWorkers = loc0.workers || '未填寫';
       const primaryNote = loc0.note || '';
 
       const caseStatus = data.status || (data.caseNo && data.caseNo.includes('002') ? '已備查' : (data.caseNo && data.caseNo.includes('004') ? '取消' : '待確認'));
@@ -1259,7 +1267,7 @@ let currentHhStep = 1;
           <div class="item-group">
             <h4>一定規模以上營造業通報項目（${data.reportKind === 'major' ? '重大變更' : '新增通報'}）：</h4>
             <ul>
-              ${scaleList.map(s => `<li>${s}</li>`).join('')}
+              ${scaleList.map(s => `<li>${portalEscape(s)}</li>`).join('')}
             </ul>
           </div>
         `;
@@ -1275,27 +1283,29 @@ let currentHhStep = 1;
 
           let subs = '';
           if (data.subItems && data.subItems.length > 0) {
-            subs = '<ul>' + data.subItems.map(s => `<li>${s}</li>`).join('') + '</ul>';
+            const normalize = text => text.replace(/^\s*\([一二三四五六七八九十]+\)\s*/, '').replace('設施規則第二百二十五條第二項所定之繩索作業', '第二百二十五條第二項所定之繩索作業').replace(/\s+/g, '');
+            const categoryItems = data.subItems.filter(item => (HH_DETAIL_WORK_IDS[cat] || []).some(id => normalize(HH_TOIRA_WORK_CATALOG.operations[id]?.label || '') === normalize(item)));
+            subs = categoryItems.length ? '<ul>' + categoryItems.map(item => `<li>${portalEscape(item)}</li>`).join('') + '</ul>' : '<div class="item-text">無對應項目</div>';
+            if (data.categories.length === 1 && !categoryItems.length) subs = '<ul>' + data.subItems.map(item => `<li>${portalEscape(item)}</li>`).join('') + '</ul>';
           } else {
             subs = '<div class="item-text">該分類全部特定作業項目</div>';
           }
 
           hazardItemsHtml += `
             <div class="item-group">
-              <h4>${catTitle}</h4>
+              <h4>${portalEscape(catTitle)}</h4>
               ${subs}
             </div>
           `;
         });
+        if (data.categories.length > 1) {
+          const normalize = text => text.replace(/^\s*\([一二三四五六七八九十]+\)\s*/, '').replace('設施規則第二百二十五條第二項所定之繩索作業', '第二百二十五條第二項所定之繩索作業').replace(/\s+/g, '');
+          const knownIds = data.categories.flatMap(cat => HH_DETAIL_WORK_IDS[cat] || []);
+          const unmatched = (data.subItems || []).filter(item => !knownIds.some(id => normalize(HH_TOIRA_WORK_CATALOG.operations[id]?.label || '') === normalize(item)));
+          if (unmatched.length) hazardItemsHtml += '<div class="item-group"><h4>其他通報項目</h4><ul>' + unmatched.map(item => `<li>${portalEscape(item)}</li>`).join('') + '</ul></div>';
+        }
       } else {
-        hazardItemsHtml = `
-          <div class="item-group">
-            <h4>具墜落危險之下列作業：</h4>
-            <ul>
-              <li>(六)吊籠作業。</li>
-            </ul>
-          </div>
-        `;
+        hazardItemsHtml = '<div class="item-text">未提供通報項目</div>';
       }
 
       // 作業地址、GPS位置 與 附加點位。一定規模案件仍用工程地址。
@@ -1305,25 +1315,25 @@ let currentHhStep = 1;
       if (data.locations && data.locations.length > 0) {
         if (data.locations.length === 1) {
           const loc0 = data.locations[0];
-          locationsHtml = `<div>${loc0.address || '未填寫'}</div>`;
+          locationsHtml = `<div>${portalEscape(loc0.address || '未填寫')}</div>`;
           const mapLink = loc0.gps ? ` <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc0.gps)}" target="_blank" style="color:#0288d1; text-decoration:underline; font-size: 12px; margin-left:6px;" title="開啟 Google 地圖">📍地圖</a>` : '';
-          gpsListHtml = `<div>${loc0.gps || '未填寫座標'}${mapLink}</div>`;
+          gpsListHtml = `<div>${portalEscape(loc0.gps || '未填寫座標')}${mapLink}</div>`;
         } else {
           locationsHtml = data.locations.map((loc, idx) => {
             const locTitle = idx === 0 ? addressLabel : `附加點位 ${idx}`;
-            return `<div style="margin-bottom:4px;"><span style="font-weight:600; color:#1d4ed8;">[${locTitle}]</span> ${loc.address || '未填寫'}</div>`;
+            return `<div style="margin-bottom:4px;"><span style="font-weight:600; color:#1d4ed8;">[${locTitle}]</span> ${portalEscape(loc.address || '未填寫')}</div>`;
           }).join('');
 
           gpsListHtml = data.locations.map((loc, idx) => {
             const locTitle = idx === 0 ? 'GPS位置' : `附加點位 ${idx}`;
             const gpsVal = loc.gps || '未填寫座標';
             const mapLink = loc.gps ? ` <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.gps)}" target="_blank" style="color:#0288d1; text-decoration:underline; font-size: 12px; margin-left:6px;" title="開啟 Google 地圖">📍地圖</a>` : '';
-            return `<div style="margin-bottom:4px;"><span style="font-weight:600; color:#1d4ed8;">[${locTitle}]</span> ${gpsVal}${mapLink}</div>`;
+            return `<div style="margin-bottom:4px;"><span style="font-weight:600; color:#1d4ed8;">[${locTitle}]</span> ${portalEscape(gpsVal)}${mapLink}</div>`;
           }).join('');
         }
       } else {
-        locationsHtml = '<div>新北市五股區五工一路3號</div>';
-        gpsListHtml = '<div>25.0708356, 121.4504537 <a href="https://www.google.com/maps/search/?api=1&query=25.0708356%2C%20121.4504537" target="_blank" style="color:#0288d1; text-decoration:underline; font-size: 12px; margin-left:6px;" title="開啟 Google 地圖">📍地圖</a></div>';
+        locationsHtml = '<div>未填寫</div>';
+        gpsListHtml = '<div>未填寫座標</div>';
       }
 
       // 附件清單 (一般附件 + 風險評估表)
@@ -1335,7 +1345,7 @@ let currentHhStep = 1;
           <div class="section-content">
             <div class="item-group">
               <ul class="attachment-list">
-                ${allFiles.map(f => `<li><a href="javascript:void(0)" onclick="alert('📥 正在下載附件檔案：${f}')" title="下載 ${f}">${f}</a></li>`).join('')}
+                ${allFiles.map(f => `<li><a href="javascript:void(0)" onclick="alert('📥 正在下載附件檔案：' + this.textContent)" title="下載 ${portalEscape(f)}">${portalEscape(f)}</a></li>`).join('')}
               </ul>
             </div>
           </div>
@@ -1372,7 +1382,7 @@ let currentHhStep = 1;
           <div class="detail-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:12px; margin-bottom:20px;">
             <h2 style="display:flex; align-items:center; gap:10px; margin:0; font-size:1.35rem; color:#1e293b; font-weight:700;">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              案件詳情：${data.caseNo}
+              案件詳情：${portalEscape(data.caseNo)}
               ${statusBadge}
             </h2>
             <div style="font-size: 13px; color:#64748b;">
@@ -1384,33 +1394,33 @@ let currentHhStep = 1;
           <div class="detail-grid-container">
             <div class="detail-card">
               <div class="detail-label">案件類型</div>
-              <div class="detail-value">${data.caseType || '危險作業通報'}</div>
+              <div class="detail-value">${portalEscape(data.caseType || '危險作業通報')}</div>
             </div>
             <div class="detail-card">
               <div class="detail-label">縣市／鄉鎮市區</div>
-              <div class="detail-value">${data.city} ${data.dist || ''}</div>
+              <div class="detail-value">${portalEscape(data.city)} ${portalEscape(data.dist || '')}</div>
             </div>
             <div class="detail-card">
               <div class="detail-label">管轄勞動檢查單位</div>
-              <div class="detail-value" style="color:#1d4ed8;">${data.adminOffice || '勞動檢查機構'}</div>
+              <div class="detail-value" style="color:#1d4ed8;">${portalEscape(data.adminOffice || '勞動檢查機構')}</div>
             </div>
 
             <div class="detail-card">
               <div class="detail-label">作業單位</div>
-              <div class="detail-value">${data.contractorUnit || '未填寫'}</div>
+              <div class="detail-value">${portalEscape(data.contractorUnit || '未填寫')}</div>
             </div>
             <div class="detail-card">
               <div class="detail-label">通報日期</div>
-              <div class="detail-value">${data.reportDate || '2026-09-01'}</div>
+              <div class="detail-value">${portalEscape(data.reportDate || data.submittedAt || inspectionCaseCatalog.find(row => row.id === data.caseNo)?.submitDate || '未提供')}</div>
             </div>
             <div class="detail-card">
               <div class="detail-label">作業時間</div>
-              <div class="detail-value" style="color:#0288d1; font-weight:600;">${data.startDate} ～ ${data.endDate}</div>
+              <div class="detail-value" style="color:#0288d1; font-weight:600;">${portalEscape(data.startDate)} ～ ${portalEscape(data.endDate)}</div>
             </div>
 
             <div class="detail-card" style="grid-column: span 3;">
               <div class="detail-label">現場聯絡人／電話</div>
-              <div class="detail-value">${primaryContact}／${primaryPhone} <span style="font-size: 13px; color:#64748b; font-weight:normal; margin-left:14px;">(現場預估作業人數：<strong>${primaryWorkers}</strong> 人)</span></div>
+              <div class="detail-value">${portalEscape(primaryContact)}／${portalEscape(primaryPhone)} <span style="font-size: 13px; color:#64748b; font-weight:normal; margin-left:14px;">(現場預估作業人數：<strong>${portalEscape(primaryWorkers)}</strong>${loc0.workers ? ' 人' : ''})</span></div>
             </div>
           </div>
 
@@ -1418,7 +1428,7 @@ let currentHhStep = 1;
           <div class="detail-section">
             <div class="section-header">
               <h3>通報項目</h3>
-              <a href="javascript:void(0)" onclick="alert('📥 正在下載案件【${data.caseNo}】風險評估表（PDF/Excel）...')" class="btn-download-risk" title="下載風險評估表">
+              <a href="javascript:void(0)" onclick="alert('📥 正在下載案件【${portalEscape(data.caseNo)}】風險評估表（PDF/Excel）...')" class="btn-download-risk" title="下載風險評估表">
                 📥 下載風險評估表
               </a>
             </div>
@@ -1435,15 +1445,19 @@ let currentHhStep = 1;
             <div class="detail-grid-container">
               <div class="detail-card">
                 <div class="detail-label">作業類別（依通報項目）</div>
-                <div class="detail-value">${data.workType || '特殊申報'}</div>
+                <div class="detail-value">${portalEscape(data.workType || '特殊申報')}</div>
               </div>
               <div class="detail-card">
                 <div class="detail-label">事業單位名稱</div>
-                <div class="detail-value">${data.notifierCompany}</div>
+                <div class="detail-value">${portalEscape(data.notifierCompany)}</div>
               </div>
+              <div class="detail-card"><div class="detail-label">通報人(職稱)</div><div class="detail-value">${portalEscape(data.notifierName || '未填寫')}</div></div>
+              <div class="detail-card"><div class="detail-label">承攬商</div><div class="detail-value">${portalEscape(data.contractors?.join('、') || '無')}</div></div>
+              <div class="detail-card"><div class="detail-label">跨轄區副知機關</div><div class="detail-value">${portalEscape(loc0.crossAdmins?.join('、') || (loc0.isCross ? '未提供' : '無'))}</div></div>
+              <div class="detail-card"><div class="detail-label">風險評估方式</div><div class="detail-value">${portalEscape(data.riskAssessment?.mode === 'toira' ? 'TOiRA 線上風險評估' : data.riskAssessment?.mode === 'upload' ? '自行上傳風險評估資料' : '未提供')}</div></div>
               <div class="detail-card">
                 <div class="detail-label">統一編號</div>
-                <div class="detail-value">${data.contractorTaxId || '無統編'}</div>
+                <div class="detail-value">${portalEscape(data.contractorTaxId || '無統編')}</div>
               </div>
 
               <div class="detail-card" style="grid-column: span 2;">
@@ -1457,30 +1471,30 @@ let currentHhStep = 1;
 
               <div class="detail-card">
                 <div class="detail-label">現場作業人員</div>
-                <div class="detail-value">${primaryWorkers} 人</div>
+                <div class="detail-value">${portalEscape(primaryWorkers)}${loc0.workers ? ' 人' : ''}</div>
               </div>
               <div class="detail-card">
                 <div class="detail-label">產業園區</div>
-                <div class="detail-value">${data.industrialPark || '否'}</div>
+                <div class="detail-value">${portalEscape(data.industrialPark || '否')}</div>
               </div>
               <div class="detail-card">
                 <div class="detail-label">通報關係</div>
-                <div class="detail-value">${data.relation || '自行作業'}</div>
+                <div class="detail-value">${portalEscape(data.relation || '自行作業')}</div>
               </div>
 
               <div class="detail-card" style="grid-column: span 2;">
                 <div class="detail-label">電子郵件 / 通報者電話</div>
-                <div class="detail-value">${portalEscape(data.email || '未提供')} / ${data.notifierPhone}</div>
+                <div class="detail-value">${portalEscape(data.email || '未提供')} / ${portalEscape(data.notifierPhone)}</div>
               </div>
               <div class="detail-card">
                 <div class="detail-label">作業名稱</div>
-                <div class="detail-value" style="color:#1d4ed8; font-weight:600;">${data.workName}</div>
+                <div class="detail-value" style="color:#1d4ed8; font-weight:600;">${portalEscape(data.workName)}</div>
               </div>
 
               <div class="detail-card" style="grid-column: span 3;">
                 <div class="detail-label">備註</div>
                 <div class="detail-value" style="font-size: 13.5px; font-weight:normal; color:#475569; line-height:1.6;">
-                  ${primaryNote || '依據職業安全衛生法規定完成線上通報，現場已指派合格安全主管專人督導。'}
+                  ${portalEscape(primaryNote || '無備註')}
                 </div>
               </div>
             </div>
@@ -1521,8 +1535,6 @@ let currentHhStep = 1;
     }
 
     function onHhRelationChange() {
-      const company = document.getElementById('hhNotifierCompany');
-      if (company) delete company.dataset.userEdited;
       syncHhCompanyFromUnit();
     }
 
