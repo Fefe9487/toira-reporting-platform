@@ -721,3 +721,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .hazard-flow #hhStep1Pane .form-field-group > label { width:auto !important; min-width:0 !important; max-width:none !important; text-align:left; white-space:normal; }
   .hazard-flow #hhStep4Pane .hh-review-grid { grid-template-columns:minmax(0,1fr); }
 }
+
+/* Completion recipient stays with the final review and action. */
+.hazard-flow #hhStep4Pane .hh-notification-section label { display:block; color:#365766; font-size:15px; font-weight:600; margin:0 0 8px; }
+.hazard-flow #hhStep4Pane .hh-notification-section .form-req { color:#ef4444; }
+.hazard-flow #hhStep4Pane .hh-notification-section input { display:block; width:100%; max-width:640px; min-width:0; box-sizing:border-box; scroll-margin-bottom:120px; }
+.hazard-flow #hhStep4Pane .hh-notification-section p { margin:7px 0 0; color:#647786; font-size:13px; line-height:1.7; overflow-wrap:anywhere; }
+.hazard-flow #hhStep4Pane .hh-notification-section #hhNotificationEmailError { color:#a4372b; }
+.hazard-flow #hhStep4Pane .hh-notification-section input[aria-invalid="true"] { border-color:#a4372b; }

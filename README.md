@@ -72,7 +72,7 @@ Q&A 內容維護於 `js/data/qa_content.json`，法條全文維護於 `js/data/q
 
 ## 資訊公司建置需求：通知郵件
 
-正式平台須納入「通報完成通知郵件」功能：寄給填報者，並副知管轄勞動檢查機構。郵件主旨與內文須由既有「訊息範本維護」統一管理，寄信後端依範本代碼讀取及帶入案件資料。請資訊公司依[通知郵件交付文件](docs/vendor-handoff/email-notification/README.md)及[訊息範本連動規格](docs/vendor-handoff/email-notification/template-maintenance-integration.md)實作。
+正式平台須納入「通報完成通知郵件」功能：寄給第四步確認的必填通知信箱，並副知管轄勞動檢查機構。該欄預設帳戶電子郵件，填報者可修改；後端須驗證並保存當次送出版本的收件地址。郵件主旨與內文須由既有「訊息範本維護」統一管理，寄信後端依範本代碼讀取及帶入案件資料。請資訊公司依[通知郵件交付文件](docs/vendor-handoff/email-notification/README.md)及[訊息範本連動規格](docs/vendor-handoff/email-notification/template-maintenance-integration.md)實作。
 
 交付文件包含郵件版型與格式規格。Q32 說明通知內容與手動重寄的收件方式；寄件信箱與部分細節仍待核定，主系統未接入實際寄信功能。QA 採手冊用途的功能敘述，建置狀態由本文件與交付規格記錄。
 

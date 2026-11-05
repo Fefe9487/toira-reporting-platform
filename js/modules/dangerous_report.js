@@ -710,10 +710,23 @@ let currentHhStep = 1;
 
     }
 
+    function validateHhNotificationEmail() {
+      const input = document.getElementById('hhNotificationEmail');
+      const error = document.getElementById('hhNotificationEmailError');
+      input.value = input.value.trim();
+      const message = !input.value ? '請輸入收件電子郵件。' : !input.validity.valid ? '請輸入單一有效的電子郵件地址。' : '';
+      error.textContent = message;
+      error.hidden = !message;
+      input.setAttribute('aria-invalid', message ? 'true' : 'false');
+      if (message) { input.scrollIntoView({block:'center'}); input.focus({preventScroll:true}); }
+      return !message;
+    }
+
     function submitHazardFlow() {
       if (currentHhStep !== 4) return;
       if (!validateHhWorkInfo()) { switchHazardStep(1); if (!document.getElementById('hhNotifierName')?.value.trim()) document.getElementById('hhNotifierName')?.focus(); return; }
       if (!validateHhRiskAssessment()) { switchHazardStep(3); return; }
+      if (!validateHhNotificationEmail()) return;
       const data = collectHhReportData();
       const existing = DEMO_HAZARD_CASES[currentHazardCaseNo];
       const today = new Date().toLocaleDateString('sv-SE', {timeZone:'Asia/Taipei'});
@@ -732,7 +745,7 @@ let currentHhStep = 1;
       closeVDialog();
       renderView('caseSearch');
       document.querySelector('#case-list-wrap tbody tr button')?.focus();
-      openVDialog({title:completedTitle,maxWidth:'620px',hideFooter:true,bodyHtml:`<div class="report-completion"><p class="completion-check" aria-hidden="true">✓</p><h3>${completedTitle}</h3><p>案件編號：<strong>${portalEscape(caseNo)}</strong></p><p>作業名稱：${portalEscape(data.workName)}</p><p class="completion-note">展示資料保留於本次預覽，尚未送至主管機關。</p><button type="button" class="v-btn v-btn-primary" onclick="closeVDialog()">返回案件列表</button></div>`});
+      openVDialog({title:completedTitle,maxWidth:'620px',hideFooter:true,bodyHtml:`<div class="report-completion"><p class="completion-check" aria-hidden="true">✓</p><h3>${completedTitle}</h3><p>案件編號：<strong>${portalEscape(caseNo)}</strong></p><p>作業名稱：${portalEscape(data.workName)}</p><p>通報完成通知收件信箱：${portalEscape(data.email)}</p><p class="completion-note">展示資料保留於本次預覽，尚未送至主管機關，也未寄送電子郵件。</p><button type="button" class="v-btn v-btn-primary" onclick="closeVDialog()">返回案件列表</button></div>`});
     }
     function hhRocDate(value) {
       const [year,month,day] = String(value).split('-');
@@ -744,7 +757,7 @@ let currentHhStep = 1;
       const crossAdmins = [...document.querySelectorAll('.cross-admin-cb:checked')].map(cb=>cb.value);
       const firstLocation = {address:value('hhEngineeringAddress'),gps:value('hhEngineeringGps'),contact:value('hhContact'),phone:value('hhPhone'),workers:value('hhWorkerCount'),note:value('hhNote'),isCross:document.getElementById('hhCrossCheck').checked,crossAdmins};
       const extraLocations = [...document.querySelectorAll('#hhExtraPointsContainer .extra-point-row')].map(row=>({address:row.querySelector('.extra-point-desc')?.value.trim() || '',gps:row.querySelector('.extra-point-gps')?.value.trim() || ''})).filter(loc=>loc.address || loc.gps);
-      return {notifierCompany:value('hhNotifierCompany'),notifierName:value('hhNotifierName'),notifierPhone:value('hhNotifierPhone'),relation:document.getElementById('hhRelation').checked?'交付承攬':'自行作業',contractors:[...document.querySelectorAll('.contractor-input')].map(inp=>inp.value.trim()).filter(Boolean),city:value('hhCitySelect'),dist:value('hhDistSelect'),adminOffice:value('hhAdminUnit'),industrialPark:document.getElementById('hhInPark').checked?value('hhPark'):'',contractorUnit:value('hhPrimaryUnit'),contractorTaxId:value('hhTaxId'),workName:value('hhWorkName'),startDate:value('hhStartDate'),endDate:value('hhEndDate'),locations:[firstLocation,...extraLocations],categories:[...document.querySelectorAll('#hhItemsGroup .checkbox-item')].filter(item=>item.querySelector('.sub-items-container input:checked')).map(item=>item.dataset.category),subItems:[...document.querySelectorAll('#hhItemsGroup .sub-items-container input:checked')].map(cb=>cb.closest('label').textContent.trim()),attachments:[...document.querySelectorAll('#hhAttachmentList .hh-att-name')].map(el=>el.textContent.trim()),riskFiles:riskAssessment.files,riskAssessment};
+      return {email:value('hhNotificationEmail'),notifierCompany:value('hhNotifierCompany'),notifierName:value('hhNotifierName'),notifierPhone:value('hhNotifierPhone'),relation:document.getElementById('hhRelation').checked?'交付承攬':'自行作業',contractors:[...document.querySelectorAll('.contractor-input')].map(inp=>inp.value.trim()).filter(Boolean),city:value('hhCitySelect'),dist:value('hhDistSelect'),adminOffice:value('hhAdminUnit'),industrialPark:document.getElementById('hhInPark').checked?value('hhPark'):'',contractorUnit:value('hhPrimaryUnit'),contractorTaxId:value('hhTaxId'),workName:value('hhWorkName'),startDate:value('hhStartDate'),endDate:value('hhEndDate'),locations:[firstLocation,...extraLocations],categories:[...document.querySelectorAll('#hhItemsGroup .checkbox-item')].filter(item=>item.querySelector('.sub-items-container input:checked')).map(item=>item.dataset.category),subItems:[...document.querySelectorAll('#hhItemsGroup .sub-items-container input:checked')].map(cb=>cb.closest('label').textContent.trim()),attachments:[...document.querySelectorAll('#hhAttachmentList .hh-att-name')].map(el=>el.textContent.trim()),riskFiles:riskAssessment.files,riskAssessment};
     }
 
     /**
@@ -770,6 +783,7 @@ let currentHhStep = 1;
         currentHazardCaseNo = '';
       }
       window.__hazardSubmitBtnText = submitBtnText;
+      const initialNotificationEmail = caseData?.email?.trim() || roleMenuData[window.currentRole]?.email?.trim() || '';
 
       let bodyHtml = `
         <div class="hazard-flow" style="display:flex; flex-direction:column; gap:16px;">
@@ -1184,6 +1198,13 @@ let currentHhStep = 1;
             <div id="hhSummaryContainer"></div>
             <section class="hh-review-section"><h4>已選通報作業</h4><div id="hhSelectedItemsSummary"></div></section>
             <section class="hh-review-section"><h4>風險評估資料</h4><div id="hhRiskSummaryContainer"></div></section>
+            <section class="hh-review-section hh-notification-section">
+              <h4>通報完成通知</h4>
+              <label for="hhNotificationEmail">收件電子郵件 <span class="form-req">*</span></label>
+              <input type="email" id="hhNotificationEmail" class="search-input" value="${portalEscape(initialNotificationEmail)}" required maxlength="254" autocomplete="email" aria-describedby="hhNotificationEmailHelp hhNotificationEmailError" oninput="document.getElementById('hhNotificationEmailError').hidden=true; this.removeAttribute('aria-invalid')">
+              <p id="hhNotificationEmailHelp">預設帶入帳戶電子郵件，可修改；本次通知以此地址為準。</p>
+              <p id="hhNotificationEmailError" role="alert" hidden></p>
+            </section>
 
             <!-- 第四步底部按鈕 -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
@@ -1495,8 +1516,8 @@ let currentHhStep = 1;
               </div>
 
               <div class="detail-card" style="grid-column: span 2;">
-                <div class="detail-label">電子郵件 / 通報者電話</div>
-                <div class="detail-value">${portalEscape(data.email || '未提供')} / ${portalEscape(data.notifierPhone)}</div>
+                <div class="detail-label">通報完成通知收件信箱 / 通報者電話</div>
+                <div class="detail-value" style="overflow-wrap:anywhere;">${portalEscape(data.email || '未提供')} / ${portalEscape(data.notifierPhone || '未提供')}</div>
               </div>
               <div class="detail-card">
                 <div class="detail-label">作業名稱</div>

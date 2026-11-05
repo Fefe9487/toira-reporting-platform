@@ -8,6 +8,7 @@
     const catalog = inspectionCaseCatalog.find(row => row.id === data.caseNo);
     return {
       version,
+      recipient: data.email?.trim() || '',
       submittedAt: data.submittedAt || data.reportDate || catalog?.submitDate || '未提供',
       filename: `${data.caseNo}_通報完成資料_第${version}版_展示.pdf`,
       report: JSON.parse(JSON.stringify(report))
@@ -164,7 +165,7 @@
     field('通報者事業單位', data.notifierCompany);
     field('通報人(職稱)', data.notifierName);
     field('通報者電話', data.notifierPhone);
-    field('電子郵件', data.email);
+    field('通報完成通知收件信箱', data.email);
     field('通報關係', data.relation);
     field('作業單位', data.contractorUnit);
     field('統一編號', data.contractorTaxId);
