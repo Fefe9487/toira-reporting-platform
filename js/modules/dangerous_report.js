@@ -1231,6 +1231,17 @@ let currentHhStep = 1;
      */
     const HH_DETAIL_WORK_IDS = {"墜落": ["roof", "rope", "tower-crane", "derrick-crane", "construction-lift", "gondola", "filming-edge"], "倒塌": ["formwork", "scaffold", "deep-excavation"], "火災爆炸": ["petrochemical", "filming-explosives"], "局限空間": ["sewer", "wastewater", "fermentation", "hot-spring"], "溺斃": ["filming-water"]};
 
+    function getHhDetailCategories(data) {
+      const saved = Array.isArray(data.categories) ? [...new Set(data.categories.filter(value => typeof value === 'string').map(value => value.trim()).filter(value => value && value !== '特殊申報'))] : [];
+      if (saved.length) return saved;
+      const normalize = text => text.replace(/^\s*\([一二三四五六七八九十]+\)\s*/, '').replace('設施規則第二百二十五條第二項所定之繩索作業', '第二百二十五條第二項所定之繩索作業').replace(/\s+/g, '');
+      const items = Array.isArray(data.subItems) ? data.subItems.filter(value => typeof value === 'string').map(normalize) : [];
+      return Object.entries(HH_DETAIL_WORK_IDS).filter(([, ids]) => ids.some(id => {
+        const label = HH_TOIRA_WORK_CATALOG.operations[id]?.label;
+        return label && items.includes(normalize(label));
+      })).map(([category]) => category);
+    }
+
     function openHazardCaseDetail(caseNo, defaultWorkName) {
       const data = Object.prototype.hasOwnProperty.call(DEMO_HAZARD_CASES, caseNo) ? DEMO_HAZARD_CASES[caseNo] : null;
       if (!data) { alert('找不到此案件，請返回案件列表重新查詢。'); return; }
@@ -1260,6 +1271,7 @@ let currentHhStep = 1;
       }
 
       // 通報項目清單產生
+      const detailCategories = getHhDetailCategories(data);
       let hazardItemsHtml = '';
       if (data.caseType === 'scale' || data.scaleItems) {
         const scaleList = data.scaleItems || ['(一) 高度達50公尺以上', '(三) 工程造價達新台幣兩億元以上'];
@@ -1271,8 +1283,8 @@ let currentHhStep = 1;
             </ul>
           </div>
         `;
-      } else if (data.categories && data.categories.length > 0) {
-        data.categories.forEach(cat => {
+      } else if (detailCategories.length > 0) {
+        detailCategories.forEach(cat => {
           let catTitle = '';
           if (cat === '墜落') catTitle = '具墜落危險之下列作業：';
           else if (cat === '倒塌') catTitle = '具倒塌、崩塌危險之下列作業：';
@@ -1286,7 +1298,7 @@ let currentHhStep = 1;
             const normalize = text => text.replace(/^\s*\([一二三四五六七八九十]+\)\s*/, '').replace('設施規則第二百二十五條第二項所定之繩索作業', '第二百二十五條第二項所定之繩索作業').replace(/\s+/g, '');
             const categoryItems = data.subItems.filter(item => (HH_DETAIL_WORK_IDS[cat] || []).some(id => normalize(HH_TOIRA_WORK_CATALOG.operations[id]?.label || '') === normalize(item)));
             subs = categoryItems.length ? '<ul>' + categoryItems.map(item => `<li>${portalEscape(item)}</li>`).join('') + '</ul>' : '<div class="item-text">無對應項目</div>';
-            if (data.categories.length === 1 && !categoryItems.length) subs = '<ul>' + data.subItems.map(item => `<li>${portalEscape(item)}</li>`).join('') + '</ul>';
+            if (detailCategories.length === 1 && !categoryItems.length) subs = '<ul>' + data.subItems.map(item => `<li>${portalEscape(item)}</li>`).join('') + '</ul>';
           } else {
             subs = '<div class="item-text">該分類全部特定作業項目</div>';
           }
@@ -1298,9 +1310,9 @@ let currentHhStep = 1;
             </div>
           `;
         });
-        if (data.categories.length > 1) {
+        if (detailCategories.length > 1) {
           const normalize = text => text.replace(/^\s*\([一二三四五六七八九十]+\)\s*/, '').replace('設施規則第二百二十五條第二項所定之繩索作業', '第二百二十五條第二項所定之繩索作業').replace(/\s+/g, '');
-          const knownIds = data.categories.flatMap(cat => HH_DETAIL_WORK_IDS[cat] || []);
+          const knownIds = detailCategories.flatMap(cat => HH_DETAIL_WORK_IDS[cat] || []);
           const unmatched = (data.subItems || []).filter(item => !knownIds.some(id => normalize(HH_TOIRA_WORK_CATALOG.operations[id]?.label || '') === normalize(item)));
           if (unmatched.length) hazardItemsHtml += '<div class="item-group"><h4>其他通報項目</h4><ul>' + unmatched.map(item => `<li>${portalEscape(item)}</li>`).join('') + '</ul></div>';
         }
@@ -1445,7 +1457,7 @@ let currentHhStep = 1;
             <div class="detail-grid-container">
               <div class="detail-card">
                 <div class="detail-label">作業類別（依通報項目）</div>
-                <div class="detail-value">${portalEscape(data.workType || '特殊申報')}</div>
+                <div class="detail-value">${portalEscape(detailCategories.join('、') || '未提供')}</div>
               </div>
               <div class="detail-card">
                 <div class="detail-label">事業單位名稱</div>
