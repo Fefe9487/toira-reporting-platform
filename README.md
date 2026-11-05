@@ -41,6 +41,8 @@ python -m http.server 18767
 - `js/data/portal_config.js`：TOiRA 與地方通報入口的預設設定。
 - `js/data/toira_work_catalog.js`：通報作業與 TOiRA 評估項目對照。
 
+第三步依第二步勾選的通報作業，以明確的作業識別碼查出可參考的 TOiRA 評估項目，一項通報作業可對應多項評估，同一評估項目會合併顯示。高處影視拍攝（`filming-edge`）對應三種情境：高度二公尺以上邊緣及開口無法設置防墜設施之影視拍攝作業（HH-005）、影視受控墜落拍攝作業（HH-017）、威亞吊飛作業（HH-016）。使用者依實際拍攝情境參考，列出三項不代表每案都必須完成三份評估。作業庫版本與映射修訂日期分別記錄；原始來源雜湊保留作為來源追溯。
+
 Q&A 內容維護於 `js/data/qa_content.json`，法條全文維護於 `js/data/qa_law_articles.json`。編輯後執行 `python scripts/render_qa.py` 產生 `faq.html`，並以 `python scripts/render_qa.py --check` 檢查同步。頁面仍為靜態 HTML，停用 JavaScript 時也能逐題閱讀及展開法條；頁首與導覽外框直接維護於 `faq.html`。
 
 115 年 10 月 15 日依提供的 47 題 QA 編修稿及注意事項逐題核對補齊，採用可供操作手冊使用的問答文字。QA 頁面不放置編修、提供稿或原型建置狀態等註記；施行日期保留於法規依據題目及法條全文。通報的所有附件（一般附件、自行評估資料及 TOiRA 評估結果）依署內規定統一每檔 15 MB；正式後端仍須執行同一容量檢查。

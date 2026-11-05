@@ -1,7 +1,9 @@
 // TOiRA 20261005h: exact assessment names from the user's task library.
 // Update this catalog and the explicit operation mapping together when TOiRA changes.
+// Mapping revision 20261015: high-place filming references all three filming scenarios.
 const HH_TOIRA_WORK_CATALOG = {
   "version": "20261005h",
+  "mappingRevision": "20261015",
   "sourceLibrarySha256": "793647d207bceb00fdff0692240f4978e25530a03d2798c8ab3701d005ae3bb4",
   "sourceMappingSha256": "9a9d5ce40ccfcfb8b0c52056c95c1b28291cdac5adf721afa7ecbfcf09f351e5",
   "dangerousCatalogCount": 17,
