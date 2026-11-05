@@ -10,7 +10,7 @@ const HH_RISK_CONTENT = [
   ['existing', '確認現有防護設施', '現場已有的設備、防護設施與管理措施'],
   ['analysis', '評估危害的風險', '說明可能性、嚴重度、風險等級及判定依據'],
   ['controls', '決定處理風險與機會之措施', '需新增或改善的設備與措施、負責人及完成時點'],
-  ['residual', '確認採取設施後的殘餘風險', '措施完成後的風險、可接受性與持續追蹤方式']
+  ['residual', '確認採取措施後的殘餘風險', '措施完成後的風險、可接受性與持續追蹤方式']
 ];
 function getHhRiskStepHtml() {
   return `<div id="hhStep3Pane" class="step-pane">
@@ -19,11 +19,11 @@ function getHhRiskStepHtml() {
       <label class="risk-choice selected" id="hhRiskChoiceUpload"><input type="radio" name="hhRiskMethod" value="upload" checked onchange="setHhRiskMode('upload')"><span><strong>自行上傳風險評估資料</strong><small>已有評估結果或佐證資料，直接附上檔案。</small></span></label>
       <label class="risk-choice" id="hhRiskChoiceToira"><input type="radio" name="hhRiskMethod" value="toira" onchange="setHhRiskMode('toira')"><span><strong>前往 TOiRA 填寫風險評估</strong><small>使用線上工具完成評估，再回到本平台附上結果。</small></span></label>
     </fieldset>
-    <section id="hhToiraRecommendations" class="toira-recommendations" aria-labelledby="hhToiraRecommendationsTitle"></section>
+    <section id="hhToiraRecommendations" class="toira-recommendations" aria-labelledby="hhToiraRecommendationsTitle" hidden></section>
     <section id="hhRiskUploadPanel" class="risk-evidence-panel" aria-label="自行上傳評估資料">
       <h4>上傳已完成的評估資料 <span class="form-req">*</span></h4><p>請附上本次各項危險作業的風險評估結果或相關佐證資料。</p>
       <input class="risk-file-input" type="file" id="hhRiskAssessmentInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="handleHhRiskAssessmentUpload(this,'upload')" aria-label="選擇風險評估資料" aria-describedby="hhRiskFileHelp">
-      <small id="hhRiskFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 20 MB。</small>
+      <small id="hhRiskFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 ${HH_ATTACHMENT_MAX_MB} MB。</small>
       <div id="hhRiskAssessmentList" class="risk-file-list" aria-live="polite"></div>
     </section>
     <section id="hhRiskToiraPanel" class="risk-evidence-panel" aria-label="TOiRA 線上風險評估" hidden>
@@ -34,7 +34,7 @@ function getHhRiskStepHtml() {
       ${HH_TOIRA_REFERENCE_ENABLED ? '<label for="hhToiraReference">評估紀錄編號（選填）</label><input class="search-input" id="hhToiraReference" maxlength="100" placeholder="如工具有提供紀錄編號，可填寫於此">' : ''}
       <label class="risk-upload-label" for="hhToiraAssessmentInput">上傳 TOiRA 評估結果 <span class="form-req">*</span></label>
       <input class="risk-file-input" type="file" id="hhToiraAssessmentInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="handleHhRiskAssessmentUpload(this,'toira')" aria-describedby="hhToiraFileHelp">
-      <small id="hhToiraFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 20 MB。</small>
+      <small id="hhToiraFileHelp">支援 PDF、Word、Excel、JPG、PNG；每個檔案上限 ${HH_ATTACHMENT_MAX_MB} MB。</small>
       <div id="hhToiraAssessmentList" class="risk-file-list" aria-live="polite"></div>
     </section>
     <p id="hhRiskUploadStatus" class="risk-upload-status" role="status"></p>
@@ -45,7 +45,7 @@ function getHhRiskStepHtml() {
     </details>
     <label class="risk-confirm"><input type="checkbox" id="hhRiskContentConfirmed" aria-describedby="hhRiskContentGuide">我確認評估資料涵蓋上述六項內容及本次各項危險作業，並將於作業前落實必要的預防設備與措施。</label>
     <p class="risk-retention-note">評估結果等紀錄或文件應留存三年；作業內容、方式或現場條件變更而影響評估結果時，應重新評估並修正措施。</p>
-    <div class="hazard-step-actions"><button type="button" class="v-btn v-btn-cancel" onclick="switchHazardStep(2)">上一步：選擇通報作業</button><button type="button" class="v-btn v-btn-primary" onclick="switchHazardStep(4)">下一步：資料確認通報 →</button></div>
+    <div class="hazard-step-actions"><button type="button" class="v-btn v-btn-cancel" onclick="switchHazardStep(2)">上一步：選擇危險作業</button><button type="button" class="v-btn v-btn-primary" onclick="switchHazardStep(4)">下一步：確認通報資料 →</button></div>
   </div>`;
 }
 function resetHhRiskAssessment() { hhRiskContext = ''; hhRiskMode = 'upload'; hhRiskFiles = { upload: [], toira: [] }; }
@@ -54,6 +54,7 @@ function setHhRiskMode(mode) {
   const changed = hhRiskMode !== mode;
   hhRiskMode = mode;
   if (changed) document.getElementById('hhRiskContentConfirmed').checked = false;
+  document.getElementById('hhToiraRecommendations').hidden = mode !== 'toira';
   document.getElementById('hhRiskUploadPanel').hidden = mode !== 'upload';
   document.getElementById('hhRiskToiraPanel').hidden = mode !== 'toira';
   document.getElementById('hhRiskChoiceUpload').classList.toggle('selected',mode === 'upload');
@@ -74,7 +75,7 @@ function handleHhRiskAssessmentUpload(input, mode = 'upload') {
   let added = 0;
   for (const file of files) {
     if (!/\.(pdf|docx?|xlsx?|jpe?g|png)$/i.test(file.name)) { rejected.push(file.name + '：檔案格式不支援'); continue; }
-    if (file.size > 20 * 1048576) { rejected.push(file.name + '：超過 20 MB'); continue; }
+    if (file.size > HH_ATTACHMENT_MAX_BYTES) { rejected.push(file.name + '：超過 ' + HH_ATTACHMENT_MAX_MB + ' MB'); continue; }
     if (!file.size) { rejected.push(file.name + '：檔案內容為空'); continue; }
     if (hhRiskFiles[mode].some(item => item.name === file.name && item.file?.size === file.size && item.file?.lastModified === file.lastModified)) { rejected.push(file.name + '：已在清單中'); continue; }
     hhRiskFiles[mode].push({name:file.name, file}); added++;
@@ -111,7 +112,7 @@ function renderHhRiskSummary() {
   const el = document.getElementById('hhRiskSummaryContainer');
   if (!el) return;
   const data = getHhRiskAssessmentData();
-  el.innerHTML = `<div class="risk-summary"><p><strong>評估方式：</strong>${data.mode === 'toira' ? 'TOiRA 線上風險評估' : '自行上傳風險評估資料'}</p>${HH_TOIRA_REFERENCE_ENABLED && data.reference ? '<p><strong>評估紀錄編號：</strong>' + portalEscape(data.reference) + '</p>' : ''}<ul>${data.files.map(name => '<li>' + portalEscape(name) + '</li>').join('')}</ul><p class="risk-summary-confirmed">✓ 已確認評估內容與作業前防護措施</p></div>`;
+  el.innerHTML = `<dl class="hh-review-grid"><div class="hh-review-field"><dt>評估方式</dt><dd>${data.mode === 'toira' ? 'TOiRA 線上風險評估' : '自行上傳風險評估資料'}</dd></div>${HH_TOIRA_REFERENCE_ENABLED && data.reference ? '<div class="hh-review-field"><dt>評估紀錄編號</dt><dd>' + portalEscape(data.reference) + '</dd></div>' : ''}<div class="hh-review-field hh-review-wide"><dt>評估資料</dt><dd><ul>${data.files.map(name => '<li>' + portalEscape(name) + '</li>').join('')}</ul></dd></div><div class="hh-review-field hh-review-wide"><dt>確認內容</dt><dd>已確認評估內容與作業前防護措施</dd></div></dl>`;
 }
 function restoreHhRiskAssessment(data) {
   resetHhRiskAssessment();

@@ -577,6 +577,12 @@ body {
 .portal-lead { color:#435563; font-size:15px; line-height:1.85; margin:0; }
 .risk-intro-figure { margin:17px 0 14px; }
 .risk-before-work-image { display:block; width:100%; height:auto; border:1px solid #d5dde4; border-radius:0; }
+.risk-banner { position:relative; container-type:inline-size; }
+.risk-banner-label { position:absolute; display:flex; align-items:center; justify-content:center; background:#064793; color:#fff; font-weight:700; white-space:nowrap; line-height:1; font-size:2.1cqw; }
+.risk-banner-label-1 { left:47.7%; top:5.5%; width:20%; height:7.5%; }
+.risk-banner-label-2 { left:76.2%; top:5.5%; width:20.5%; height:7.5%; }
+.risk-banner-label-3 { left:43.3%; top:49.2%; width:16.3%; height:7.4%; }
+.risk-banner-label-4 { left:81%; top:49.2%; width:17.2%; height:7.4%; }
 .risk-intro-figure figcaption { color:#5a6875; font-size:13px; margin-top:7px; line-height:1.6; }
 .risk-intro-note { background:#edf3f9; border-left:4px solid #285f8c; padding:12px 14px; font-size:15px; line-height:1.6; color:#244866; }
 .risk-intro-note p { font-size:13px; margin:4px 0 0; color:#435c72; }
@@ -640,3 +646,15 @@ body {
 .portal-header a:hover { text-decoration:underline; text-underline-offset:4px; }
 #loginView footer { margin-top:0; border-top:3px solid #174d7e; background:#e2e8ef; color:#3e5569; }
 #loginView .accessibility-badge { border:0; color:#3e5569; }
+
+/* Homepage tutorial: preserve the full video interface and native player controls. */
+.portal-tutorial { background:#fff; border:1px solid #cbd6df; margin-top:24px; padding:22px 24px; scroll-margin-top:24px; min-width:0; }
+.portal-tutorial-summary { color:#435563; font-size:15px; line-height:1.8; margin:0 0 18px; }
+.portal-tutorial-player { width:100%; max-width:960px; aspect-ratio:16 / 9; margin:0 auto; background:#0f172a; }
+.portal-tutorial-player iframe { display:block; width:100%; height:100%; border:0; }
+.portal-tutorial-link { max-width:960px; margin:12px auto 0; line-height:1.8; }
+.portal-tutorial-link a { display:inline-block; color:#225d8d; font-size:14px; padding:4px 0; text-underline-offset:4px; }
+.portal-tutorial-link a:focus-visible { outline:2px solid #225d8d; outline-offset:4px; }
+@media (max-width:576px) {
+  .portal-tutorial { padding:18px 16px; }
+}
