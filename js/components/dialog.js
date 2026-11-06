@@ -33,7 +33,7 @@ let vDialogOriginalOverflow = "";
            <label style="display:block; font-size: 13px; font-weight:600; margin-bottom:4px;">帳號(email)：</label>
            <input type="email" placeholder="例如：user@example.com" class="form-control">
          </div>
-         <button type="button" class="btn-submit" onclick="alert('重設密碼信件已寄出，請查收信箱！'); closeModal();">發送重設信件</button>`
+         <button type="button" class="btn-submit" onclick="alert('密碼重設為展示流程，尚未啟用寄信服務，未寄出電子郵件。');">發送重設信件</button>`
       );
     }
 

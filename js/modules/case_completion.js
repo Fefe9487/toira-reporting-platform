@@ -3,14 +3,15 @@
   'use strict';
 
   function createHazardCompletionNotice(data, previousVersion = 0) {
-    const { completionNotice, ...report } = data;
+    const { completionNotice, completionNoticeHistory, ...report } = data;
     const version = previousVersion + 1;
     const catalog = inspectionCaseCatalog.find(row => row.id === data.caseNo);
     return {
       version,
       recipient: data.email?.trim() || '',
       submittedAt: data.submittedAt || data.reportDate || catalog?.submitDate || '未提供',
-      filename: `${data.caseNo}_通報完成資料_第${version}版_展示.pdf`,
+      filename: getHazardReportFilename(data.caseNo, version),
+      document: buildHazardReportDocument(report, version),
       report: JSON.parse(JSON.stringify(report))
     };
   }
@@ -18,7 +19,14 @@
   function ensureHazardCompletionNotice(data) {
     // 已存在案件沒有原始郵件附件；首次檢視只建立展示快照，不宣稱是原寄送檔案。
     if (!data.completionNotice) data.completionNotice = createHazardCompletionNotice(data);
-    return data.completionNotice;
+    const notice = data.completionNotice;
+    if (!notice.document) {
+      notice.document = buildHazardReportDocument(notice.report, notice.version);
+      // Older snapshots keep their original attachment name.
+      notice.document.mailFiles[0].filename = notice.filename;
+      notice.document.sections.find(section => section.id === 'notification').fields.find(field => field.key === 'mailFiles').values = [notice.filename];
+    }
+    return notice;
   }
 
   function getHazardCompletionActionsHtml(data) {
@@ -97,101 +105,76 @@
   // 使用瀏覽器中文字型繪製 A4 頁面，再封裝為 PDF；不需外部字型或 CDN。
   // 展示 PDF 為影像頁面；正式平台須保存可搜尋、可存取的原始郵件附件。
   function buildCompletionPdf(notice) {
-    const width = 1240, height = 1754, margin = 88, lineHeight = 39;
+    const width = 1240, height = 1754, margin = 78, lineHeight = 34;
     const pages = [];
+    const doc = notice.document || buildHazardReportDocument(notice.report, notice.version);
     let canvas, ctx, y;
     function page() {
-      canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
       ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('無法建立 PDF，請使用支援檔案下載的瀏覽器再試一次。');
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, width, height);
-      ctx.fillStyle = '#174d7e';
-      ctx.fillRect(0, 0, width, 174);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 36px "Microsoft JhengHei", sans-serif';
-      ctx.fillText('通報完成資料（展示）', margin, 80);
-      ctx.font = '24px "Microsoft JhengHei", sans-serif';
-      ctx.fillText(`${notice.report.caseNo}  /  第 ${notice.version} 版`, margin, 128);
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = '#173e55'; ctx.fillRect(0, 0, width, 102);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 34px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('危險作業通報資料', margin, 65);
+      ctx.fillStyle = '#425b6a'; ctx.font = '22px "Microsoft JhengHei", sans-serif';
+      ctx.fillText(`${doc.caseNo}   /   第 ${doc.version} 版`, margin, 143);
       ctx.font = '20px "Microsoft JhengHei", sans-serif';
-      ctx.fillText(`展示資料，非正式通報證明  |  第 ${pages.length + 1} 頁`, margin, height - 55);
-      pages.push(canvas);
-      y = 228;
+      ctx.fillText(`通報時間：${notice.submittedAt}（臺灣時間）`, margin, 177);
+      ctx.strokeStyle = '#dce5ea'; ctx.beginPath(); ctx.moveTo(margin, height-100); ctx.lineTo(width-margin, height-100); ctx.stroke();
+      ctx.fillStyle = '#657984'; ctx.font = '19px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('危險作業風險評估及通報平台  /  展示資料，未寄送電子郵件', margin, height-60);
+      ctx.textAlign = 'right'; ctx.fillText(`第 ${pages.length+1} 頁`, width-margin, height-60); ctx.textAlign = 'left';
+      pages.push(canvas); y = 212;
     }
-    function paragraph(text, heading = false) {
-      y += heading ? 18 : 8;
-      for (const part of String(text).split(/\r?\n/)) {
+    function wrap(value, maxWidth, font) {
+      ctx.font = font;
+      const lines = [];
+      for (const part of String(value).split(/\r?\n/)) {
         let line = '';
-        const draw = () => {
-          if (y > height - 125) page();
-          ctx.fillStyle = heading ? '#174d7e' : '#263746';
-          ctx.font = `${heading ? 'bold 28px' : '25px'} "Microsoft JhengHei", sans-serif`;
-          ctx.fillText(line, margin, y);
-          y += lineHeight;
-        };
-        ctx.font = `${heading ? 'bold 28px' : '25px'} "Microsoft JhengHei", sans-serif`;
         for (const char of part) {
-          if (ctx.measureText(line + char).width > width - margin * 2) {
-            draw();
-            ctx.font = `${heading ? 'bold 28px' : '25px'} "Microsoft JhengHei", sans-serif`;
-            line = '';
-          }
+          if (line && ctx.measureText(line+char).width > maxWidth) { lines.push(line); line = ''; }
           line += char;
         }
-        draw();
+        lines.push(line);
+      }
+      return lines;
+    }
+    function row(label, value) {
+      const labelWidth = 245, totalWidth = width-margin*2;
+      const labelFont = 'bold 22px "Microsoft JhengHei", sans-serif';
+      const valueFont = '24px "Microsoft JhengHei", sans-serif';
+      const labels = wrap(label, labelWidth-30, labelFont);
+      const values = wrap(value, totalWidth-labelWidth-38, valueFont);
+      let index = 0;
+      const count = Math.max(labels.length, values.length);
+      while (index < count) {
+        let room = Math.floor((height-122-y-24)/lineHeight);
+        if (room < 2) { page(); room = Math.floor((height-122-y-24)/lineHeight); }
+        const length = Math.min(room, count-index), rowHeight = length*lineHeight+24;
+        ctx.fillStyle = '#f5f8fa'; ctx.fillRect(margin, y, labelWidth, rowHeight);
+        ctx.strokeStyle = '#dce5ea'; ctx.strokeRect(margin, y, totalWidth, rowHeight);
+        for (let n=0;n<length;n++) {
+          const line = index+n, baseline=y+34+n*lineHeight;
+          ctx.fillStyle='#506775'; ctx.font=labelFont;
+          if (labels[line]) ctx.fillText(labels[line], margin+15, baseline);
+          else if (n===0 && index) ctx.fillText('（續）', margin+15, baseline);
+          ctx.fillStyle='#223b4a'; ctx.font=valueFont;
+          if (values[line]) ctx.fillText(values[line], margin+labelWidth+18, baseline);
+        }
+        y += rowHeight; index += length;
       }
     }
-    const data = notice.report;
-    const field = (label, value) => paragraph(`${label}：${value || '未提供'}`);
-    const list = (label, values) => {
-      paragraph(label, true);
-      if (!values?.length) paragraph('無');
-      else values.forEach((value, index) => paragraph(`${index + 1}. ${value}`));
-    };
     page();
-    paragraph('TOiRA 危險作業風險評估及通報平台', true);
-    paragraph('本檔為展示案件的資料快照，未寄送電子郵件或送至主管機關；既有展示案件的快照於首次檢視時建立。');
-    field('通報日期／時間（臺灣時間）', notice.submittedAt);
-    field('案件類型', data.caseType === 'scale' || data.scaleItems ? '一定規模以上營造業通報' : '危險作業通報');
-    field('作業名稱', data.workName);
-    field('預期作業期間', `${data.startDate || '未提供'} 至 ${data.endDate || '未提供'}`);
-    field('管轄機構', data.adminOffice);
-    field('所在地區', `${data.city || ''}${data.dist || ''}`);
-    field('產業園區', data.industrialPark || '否');
-    paragraph('通報者與作業單位', true);
-    field('通報者事業單位', data.notifierCompany);
-    field('通報人(職稱)', data.notifierName);
-    field('通報者電話', data.notifierPhone);
-    field('通報完成通知收件信箱', data.email);
-    field('通報關係', data.relation);
-    field('作業單位', data.contractorUnit);
-    field('統一編號', data.contractorTaxId);
-    field('承攬商', data.contractors?.join('、') || '無');
-    field('專屬單位', data.specialUnit);
-    if (data.scaleItems) {
-      field('通報種類', data.reportKind === 'major' ? '重大變更' : '新增通報');
-      field('建造執照', data.buildingPermit);
-      field('工程地號／地址', data.siteAddress);
-    }
-    list('作業類別', data.categories);
-    list('完整通報項目', data.scaleItems || data.subItems);
-    (data.locations || []).forEach((location, index) => {
-      paragraph(index ? `附加點位 ${index}` : '主要作業地點', true);
-      field('地址／說明', location.address);
-      field('GPS 位置', location.gps);
-      field('現場聯絡人', location.contact);
-      field('聯絡電話', location.phone);
-      field('作業人數', location.workers);
-      field('跨轄區副知機關', location.crossAdmins?.join('、') || (location.isCross ? '未提供' : '無'));
-      field('備註', location.note);
+    doc.sections.forEach((section,index) => {
+      if (y+145 > height-122) page();
+      y += 18;
+      ctx.fillStyle='#eaf1f5'; ctx.fillRect(margin,y,width-margin*2,52);
+      ctx.fillStyle='#284f65'; ctx.font='bold 27px "Microsoft JhengHei", sans-serif';
+      ctx.fillText(`${String(index+1).padStart(2,'0')}  ${section.title}`,margin+16,y+35);
+      y += 52;
+      section.fields.forEach(field => row(field.label, field.values ? (field.values.length ? field.values.map((value,i)=>`${i+1}. ${value}`).join('\n') : field.empty) : field.value));
     });
-    list('一般附件清單', data.attachments);
-    field('風險評估方式', data.riskAssessment?.mode === 'toira' ? 'TOiRA 線上風險評估' : data.riskAssessment?.mode === 'upload' ? '自行上傳風險評估資料' : '未提供');
-    list('風險評估附件清單', data.riskFiles);
-    paragraph('附件清單僅列名稱；原始風險評估與佐證資料請於平台查閱。案件目前狀態以平台為準。');
 
     const encoder = new TextEncoder();
     const chunks = [], offsets = [0];
@@ -226,33 +209,41 @@
     return new Blob(chunks, { type: 'application/pdf' });
   }
 
+  const completionPdfCache = new WeakMap();
+  function saveCompletionPdf(notice) {
+    let blob = completionPdfCache.get(notice);
+    if (!blob) { blob = buildCompletionPdf(notice); completionPdfCache.set(notice,blob); }
+    const url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url; link.download = notice.filename.replace(/[\\/:*?"<>|\x00-\x1f]/g, '_');
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  }
   async function downloadHazardCompletion(button) {
     if (button.disabled) return;
-    const container = button.closest('.case-detail-container');
-    const originalText = button.textContent;
-    button.disabled = true;
-    button.textContent = '正在產生 PDF…';
+    const container = button.closest('.case-detail-container'), originalText = button.textContent;
+    button.disabled = true; button.textContent = '正在產生 PDF…';
     try {
-      const { notice } = caseContext(button);
-      await document.fonts.ready;
-      const blob = buildCompletionPdf(notice);
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = notice.filename.replace(/[\\/:*?"<>|\x00-\x1f]/g, '_');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 30000);
-      showStatus(container, '通報完成檔案已產生，請查看瀏覽器下載項目。');
+      const {notice} = caseContext(button);
+      await document.fonts.ready; saveCompletionPdf(notice);
+      showStatus(container,'通報資料 PDF 已產生，請查看瀏覽器下載項目。');
     } catch (error) {
-      console.error('通報完成檔案下載失敗', error);
-      showStatus(container, '下載失敗，請再試一次；若持續失敗，請聯絡平台服務人員。', true);
-    } finally {
-      button.disabled = false;
-      button.textContent = originalText;
-    }
+      console.error('通報資料下載失敗',error);
+      showStatus(container,'下載失敗，請再試一次；若持續失敗，請聯絡平台服務人員。',true);
+    } finally { button.disabled=false; button.textContent=originalText; }
+  }
+  async function downloadHazardReviewPdf(button) {
+    if (button.disabled || !validateHhNotificationEmail()) return;
+    const originalText=button.textContent, status=document.getElementById('hhReviewPdfStatus');
+    button.disabled=true; button.textContent='正在產生 PDF…';
+    try {
+      const {data,version}=getHhReviewReportData();
+      const notice=createHazardCompletionNotice(data,version-1);
+      notice.submittedAt='送出前預覽';
+      await document.fonts.ready; saveCompletionPdf(notice);
+      status.textContent='已下載本頁資料的 PDF 預覽；目前尚未送出通報。';
+    } catch(error) { console.error(error); status.textContent='PDF 預覽產生失敗，請再試一次。'; }
+    finally { button.disabled=false; button.textContent=originalText; }
   }
 
-  Object.assign(window, { createHazardCompletionNotice, ensureHazardCompletionNotice, getHazardCompletionActionsHtml, getHazardCompletionPanelHtml, downloadHazardCompletion, toggleHazardResend, confirmHazardResend });
+  Object.assign(window, { createHazardCompletionNotice, ensureHazardCompletionNotice, getHazardCompletionActionsHtml, getHazardCompletionPanelHtml, downloadHazardCompletion, downloadHazardReviewPdf, toggleHazardResend, confirmHazardResend });
 })();

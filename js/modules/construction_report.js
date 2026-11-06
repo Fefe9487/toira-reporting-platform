@@ -287,19 +287,7 @@
     }
 
     function submitScaleFlow() {
-      const projName = document.getElementById('scaleProjectName')?.value || '一定規模營造工程標案';
-      if (currentScaleMode === 'edit') {
-        const caseNo = currentScaleCaseNo || 'SC-115-09005';
-        alert(`🎉【一定規模作業案件資料已更新】！\n\n案件編號：${caseNo}\n工程名稱：${projName}\n資料異動已即時同步主管檢查機關列管！`);
-      } else {
-        const randomNo = 'SCALE-2026' + String(Math.floor(Math.random() * 9000 + 1000));
-        alert(`🎉【一定規模以上營造業通報完成】！\n\n案件編號：${randomNo}\n工程名稱：${projName}\n主管檢查機構已即時收件列管備查！`);
-      }
-      closeVDialog();
-
-      if (typeof renderView === 'function') {
-        renderView('caseSearch');
-      }
+      alert('此為一定規模作業通報的展示流程，尚未接入案件儲存及主管機關通報服務。資料尚未送出；本畫面會保留，請勿視為已完成通報。');
     }
 
     function populateScaleCaseData(data) {

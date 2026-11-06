@@ -1,9 +1,10 @@
 /* Reporting entrances verified against official agency links on 2026-10-10. */
-const PORTAL_CONFIG_KEY = 'hazardPortal.links.v3';
-const PORTAL_PREVIOUS_CONFIG_KEY = 'hazardPortal.links.v2';
+const PORTAL_CONFIG_KEY = 'hazardPortal.links.v4';
+const PORTAL_PREVIOUS_CONFIG_KEY = 'hazardPortal.links.v3';
+const PORTAL_OLDER_CONFIG_KEY = 'hazardPortal.links.v2';
 const PORTAL_LEGACY_CONFIG_KEY = 'hazardPortal.links.v1';
 const PORTAL_LINK_DEFAULTS = {
-  toiraUrl: 'https://sh168.osha.gov.tw/',
+  toiraUrl: 'https://sh168.osha.gov.tw/Content/Etool2',
   offices: {
     '新北市政府勞動檢查處': { url: 'https://ilabor.ntpc.gov.tw/cloud/DangerOpNotify', label: '危險性及臨時性作業通報', enabled: true },
     '臺北市勞動檢查處': { url: 'https://service2.lio.gov.taipei/LSIO_F/Home/RoofWork', label: '輕質屋頂、施工架、吊籠暨繩索作業通報', enabled: true, additionalLinks: [
@@ -47,10 +48,11 @@ function getPortalLinks() {
   const config = structuredClone(PORTAL_LINK_DEFAULTS);
   try {
     const currentRaw = localStorage.getItem(PORTAL_CONFIG_KEY);
-    const previousRaw = currentRaw ? null : localStorage.getItem(PORTAL_PREVIOUS_CONFIG_KEY);
+    const previousRaw = currentRaw ? null : (localStorage.getItem(PORTAL_PREVIOUS_CONFIG_KEY) || localStorage.getItem(PORTAL_OLDER_CONFIG_KEY));
     const saved = JSON.parse(currentRaw || previousRaw || localStorage.getItem(PORTAL_LEGACY_CONFIG_KEY) || 'null');
     const legacy = !currentRaw && !previousRaw;
-    if (saved && portalSafeUrl(saved.toiraUrl)) config.toiraUrl = portalSafeUrl(saved.toiraUrl);
+    // Older saved URLs are replaced once; v4 settings can still be updated by an administrator.
+    if (currentRaw && saved && portalSafeUrl(saved.toiraUrl)) config.toiraUrl = portalSafeUrl(saved.toiraUrl);
     if (!saved || !saved.offices || typeof saved.offices !== 'object' || Array.isArray(saved.offices)) return config;
     // v3 is an explicit list: removed entries and an empty list stay removed on reload.
     config.offices = {};
@@ -64,7 +66,7 @@ function getPortalLinks() {
       }
       const cleaned = portalCleanOffice(item, defaultItem);
       if (!cleaned.url) continue;
-      if (!currentRaw && cleaned.url === 'https://dons.osha.gov.tw/') continue;
+      if (!currentRaw && !localStorage.getItem(PORTAL_PREVIOUS_CONFIG_KEY) && cleaned.url === 'https://dons.osha.gov.tw/') continue;
       config.offices[unit] = cleaned;
     }
   } catch { /* Use official defaults when storage is unavailable or malformed. */ }
@@ -89,4 +91,4 @@ function refreshPortalLinks() {
   document.querySelectorAll('[data-toira-link]').forEach(a => { a.href = toiraUrl; });
 }
 window.addEventListener('DOMContentLoaded', refreshPortalLinks);
-window.addEventListener('storage', event => { if ([PORTAL_CONFIG_KEY,PORTAL_PREVIOUS_CONFIG_KEY,PORTAL_LEGACY_CONFIG_KEY].includes(event.key) || event.key === null) refreshPortalLinks(); });
+window.addEventListener('storage', event => { if ([PORTAL_CONFIG_KEY,PORTAL_PREVIOUS_CONFIG_KEY,PORTAL_OLDER_CONFIG_KEY,PORTAL_LEGACY_CONFIG_KEY].includes(event.key) || event.key === null) refreshPortalLinks(); });

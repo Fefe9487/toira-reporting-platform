@@ -312,11 +312,12 @@ const HH_ATTACHMENT_MAX_BYTES = HH_ATTACHMENT_MAX_MB * 1048576;
     /**
      * 附加點位：新增路段／GPS點位 (參考圖片)
      */
-    function addExtraPoint(desc = '', gps = '') {
+    function addExtraPoint(desc = '', gps = '', savedLocation = null) {
       const container = document.getElementById('hhExtraPointsContainer');
       if (!container) return;
       const div = document.createElement('div');
       div.className = 'extra-point-row';
+      if (savedLocation) div.dataset.savedLocation = JSON.stringify(savedLocation);
       div.style.cssText = 'display:flex; gap:10px; align-items:center;';
       div.innerHTML = `
         <input type="text" class="search-input extra-point-desc" placeholder="路段／說明" value="${portalEscape(desc)}" style="flex:1;">

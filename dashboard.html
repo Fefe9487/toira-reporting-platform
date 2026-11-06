@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>TOiRA 危險作業風險評估及通報平台 - 平台主頁</title>
+  <title>危險作業風險評估及通報平台 - 平台主頁</title>
   <!-- 模組化樣式引入 (解耦自大單體 CSS) -->
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/dashboard.css?v=20261105-layout">
   <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/report_flow.css?v=20261106-email">
+  <link rel="stylesheet" href="css/report_flow.css?v=20261106-flow-audit">
 </head>
 <body class="dashboard-page">
 
@@ -20,7 +20,7 @@
       <img src="assets/images/sha_logo.png" onerror="this.src='sha_logo.png'" alt="職安署Logo" class="sidebar-logo">
       <div class="sidebar-title-group">
         <span class="sidebar-agency">勞動部職業安全衛生署</span>
-        <span class="sidebar-system">TOiRA<br>危險作業風險評估<br>及通報平台</span>
+        <span class="sidebar-system">危險作業風險評估<br>及通報平台</span>
       </div>
     </div>
 
@@ -146,19 +146,20 @@
 
 
   <!-- 核心資料與共用模組 -->
-  <script src="js/data/geo_data.js"></script>
+  <script src="js/data/geo_data.js?v=20261106-flow-audit"></script>
   <script src="js/data/portal_config.js"></script>
   <script src="js/data/menu_config.js"></script>
   <script src="js/components/calendar_picker.js"></script>
-  <script src="js/components/dialog.js"></script>
+  <script src="js/components/dialog.js?v=20261106-flow-audit"></script>
   <script src="js/modules/auth.js"></script>
-  <script src="js/modules/case_search.js"></script>
+  <script src="js/modules/case_search.js?v=20261106-flow-audit"></script>
   <script src="js/modules/system_admin.js"></script>
-  <script src="js/modules/dangerous_report.js?v=20261106-email"></script>
-  <script src="js/modules/case_completion.js?v=20261106-email"></script>
+  <script src="js/modules/report_document.js?v=20261106-flow-audit"></script>
+  <script src="js/modules/dangerous_report.js?v=20261106-flow-audit"></script>
+  <script src="js/modules/case_completion.js?v=20261106-flow-audit"></script>
   <script src="js/data/toira_work_catalog.js"></script>
-  <script src="js/modules/risk_assessment.js?v=20261105-wording"></script>
-  <script src="js/modules/construction_report.js"></script>
+  <script src="js/modules/risk_assessment.js?v=20261106-flow-audit"></script>
+  <script src="js/modules/construction_report.js?v=20261106-flow-audit"></script>
   <script src="js/modules/dashboard_views.js"></script>
   <script src="js/modules/navigation.js"></script>
 </body>
