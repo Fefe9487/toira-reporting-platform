@@ -123,12 +123,31 @@
     function applyInspectionCaseStatus(ids, status) {
       ids.forEach(id => {
         const row = inspectionCaseCatalog.find(item => item.id === id);
-        if (row) { row.status = status; if (status === '已備查') row.readAt = new Date().toISOString(); }
-        if (window.DEMO_HAZARD_CASES && window.DEMO_HAZARD_CASES[id]) {
-          window.DEMO_HAZARD_CASES[id].status = status;
-          if (status === '已備查') window.DEMO_HAZARD_CASES[id].readAt = new Date().toISOString();
-        }
+        const detail = window.DEMO_HAZARD_CASES?.[id];
+        const now = new Date().toISOString();
+        const readAt = row?.readAt || detail?.readAt || now;
+        const cancelledAt = row?.cancelledAt || detail?.cancelledAt || now;
+        [row,detail].filter(Boolean).forEach(record=>{
+          record.status = status;
+          if (status === '已備查') record.readAt = readAt;
+          if (status === '取消') record.cancelledAt = cancelledAt;
+        });
       });
+    }
+
+    function cancelHazardCase(caseNo) {
+      const role = window.currentRole;
+      if (!['company','inspection'].includes(role)) return false;
+      const row = inspectionCaseCatalog.find(item=>item.id===caseNo);
+      const detail = window.DEMO_HAZARD_CASES?.[caseNo];
+      const status = detail?.status || row?.status;
+      if (!status || status === '取消') return false;
+      if (role === 'inspection' && status !== '已備查') { alert('請先開啟並閱讀案件資料，再辦理取消。'); return false; }
+      if (!confirm('確認取消通報案件【'+caseNo+'】？')) return false;
+      applyInspectionCaseStatus([caseNo],'取消');
+      if (document.querySelector('.case-detail-container')) closeVDialog();
+      if (typeof renderView === 'function') renderView('caseSearch');
+      return true;
     }
 
     function mergeScanToolbarHtml() {
@@ -246,7 +265,7 @@
           }
           return `
             <button class="action-btn edit" title="編輯" onclick="openCaseEditDialog('${caseNo}', '高架橋梁外牆防蝕吊掛塗裝作業')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-            <button class="action-btn delete" title="取消" onclick="if(confirm('確認取消通報案件【' + '${caseNo}' + '】？')){ alert('案件【' + '${caseNo}' + '】已成功取消！'); }" style="color:#dc2626;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg></button>
+            <button class="action-btn delete" title="取消" data-case-no="${portalEscape(caseNo)}" onclick="cancelHazardCase(this.dataset.caseNo)" style="color:#dc2626;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg></button>
             <button class="action-btn view" title="檢視" onclick="openHazardCaseDetail('${caseNo}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
           `;
         }
@@ -642,16 +661,7 @@
 
       const confirmText = '確定要將以下 ' + caseIds.length + ' 筆案件改派至【' + targetUnit + '】嗎？\n\n案件清單：\n' + caseIds.join(', ') + (reason ? ('\n\n改派原因：' + reason) : '');
       if (confirm(confirmText)) {
-        alert('✔ 已成功完成 ' + caseIds.length + ' 筆案件之改派作業！\n已移交管轄單位：【' + targetUnit + '】');
-        
-        // 取消勾選
-        checked.forEach(cb => cb.checked = false);
-        const allCb = document.getElementById('checkAllCases');
-        if (allCb) allCb.checked = false;
-        const countEl = document.getElementById('batchSelectCount');
-        if (countEl) countEl.textContent = '0';
-
-        closeVDialog();
+        alert('改派流程展示完成。此功能尚未接入案件儲存及機構收案服務，尚未變更管轄單位；所填內容保留於本畫面。');
       }
     }
 
@@ -664,6 +674,7 @@ window.getCaseSearchViewHtml = getCaseSearchViewHtml;
 window.toggleAllCases = toggleAllCases;
 window.updateSelectedCount = updateSelectedCount;
 window.handleBatchAudit = handleBatchAudit;
+window.cancelHazardCase = cancelHazardCase;
 window.openBatchReassignDialog = openBatchReassignDialog;
 window.submitBatchReassign = submitBatchReassign;
 window.mergeScanByUnit = mergeScanByUnit;
