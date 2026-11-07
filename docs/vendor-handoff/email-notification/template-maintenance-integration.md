@@ -49,7 +49,7 @@
 
 - 獨立代碼與排程事件：`HAZARD_INSPECTION_DIGEST`。每 12 小時依機構建立一筆批次；只有新增案件時寄送，不由每個 `HAZARD_REPORT_SUBMITTED` 事件直接寄給機構。
 - To 為該機構核定的通知信箱，Cc／Bcc 為空；不附個別案件 PDF 或原始附件。
-- 使用參數 `{INSPECTION_OFFICE}`、`{WINDOW_START}`、`{WINDOW_END}`、`{CUTOFF_AT}`、`{NEW_CASE_COUNT}`、`{TODAY_NEW_CASE_COUNT}`、`{CARRYOVER_CASE_COUNT}`、`{UNREAD_CASE_COUNT}`、`{CASE_LIST_URL}`、`{PLATFORM_NAME}`。件數、期間及登入查詢入口均對應同一批次。
+- 使用參數 `{INSPECTION_OFFICE}`、`{WINDOW_START}`、`{WINDOW_END}`、`{CUTOFF_AT}`、`{NEW_CASE_COUNT}`、`{TODAY_NEW_CASE_COUNT}`、`{CARRYOVER_CASE_COUNT}`、`{UNREAD_CASE_COUNT}`、`{PLATFORM_NAME}`。件數及期間均對應同一批次；查閱方式統一為：請登入平台，至「通報案件查詢」查看案件。不放入批次直達連結。
 - 主旨、HTML 與純文字內容仍由同一訊息範本維護服務管理，批次保存範本版本並於重試時沿用。種子資料、歸戶、跨日補列及驗收依[彙整規格](inspection-digest.md)。
 
 ## 參數代換
@@ -70,10 +70,13 @@
 - `{CASE_STATUS}`：當次案件狀態，依平台紀錄帶入。
 - `{ATTACHMENT_LIST}`：本次附件名稱清單。
 - `{REPORT_PDF_FILENAME}`：由案件編號及送出版本建立的通報資料 PDF 檔名，與第四步及該版本下載檔案一致。
-- `{CASE_URL}`：須登入並具有案件權限的正式案件查詢網址。
 - `{INSPECTION_PHONE}`、`{SERVICE_PHONE}`：管轄機構及平台服務電話。
 
-資訊公司須提供可用參數清單及預覽資料，儲存與發布前檢查未知參數。案件名稱、單位名稱及其他文字代入 HTML 時應做文字轉義；案件網址由平台建立並驗證。不得允許範本執行任意程式、查詢密碼或帶出其他案件資料。
+資訊公司須提供可用參數清單及預覽資料，儲存與發布前檢查未知參數。案件名稱、單位名稱及其他文字代入 HTML 時應做文字轉義。目前範本不使用個案或批次網址參數。不得允許範本執行任意程式、查詢密碼或帶出其他案件資料。
+
+## 查詢說明與後續擴充
+
+填報者完成通知、人工重寄與勞檢彙整提醒均提示：請登入平台，至「通報案件查詢」查看案件。純文字、HTML、登錄種子及預覽須一致，不留下未代換的網址或可點擊的假連結。個案／批次直達及登入後導回屬後續功能，正式實作並通過案件授權驗收後，再增加對應網址參數；目前不列為必要參數或本次驗收條件。
 
 ## 範本種類及狀態語意
 
