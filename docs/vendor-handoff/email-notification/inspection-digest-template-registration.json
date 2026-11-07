@@ -7,10 +7,10 @@
     "code": "HAZARD_INSPECTION_DIGEST",
     "type": "EML",
     "desc": "每12小時依機構彙整新增案件並提醒登入點閱；無新增不寄信，不附個別案件檔案。",
-    "content": "{INSPECTION_OFFICE} 您好：\n\n本批新增危險作業通報案件共 {NEW_CASE_COUNT} 件，請登入平台點閱。\n\n統計期間：{WINDOW_START} 至 {WINDOW_END}（臺灣時間；起點包含、終點不包含）\n統計截止：{CUTOFF_AT}（臺灣時間）\n本批新增：{NEW_CASE_COUNT} 件\n其中今日新增：{TODAY_NEW_CASE_COUNT} 件\n其中跨日補列：{CARRYOVER_CASE_COUNT} 件\n本批尚未點閱：{UNREAD_CASE_COUNT} 件（截至上述時間）\n\n登入平台查閱本批案件：\n{CASE_LIST_URL}\n\n完整案件資料及各版本通報 PDF 請登入後依權限查閱，本信不附個別案件檔案。\n本提醒每 12 小時彙整一次，沒有新增案件時不寄送。\n寄送提醒不會將案件標記為已閱讀或已備查。\n\n{PLATFORM_NAME}\n",
+    "content": "{INSPECTION_OFFICE} 您好：\n\n本批新增危險作業通報案件共 {NEW_CASE_COUNT} 件，請登入平台點閱。\n\n統計期間：{WINDOW_START} 至 {WINDOW_END}（臺灣時間）\n統計截止：{CUTOFF_AT}（臺灣時間）\n本批新增：{NEW_CASE_COUNT} 件\n其中今日新增：{TODAY_NEW_CASE_COUNT} 件\n其中跨日補列：{CARRYOVER_CASE_COUNT} 件\n本批尚未點閱：{UNREAD_CASE_COUNT} 件（截至上述時間）\n\n請登入平台，至「通報案件查詢」查看案件。\n\n完整案件資料及各版本通報 PDF 請登入後依權限查閱，本信不附個別案件檔案。\n本提醒每 12 小時彙整一次，沒有新增案件時不寄送。\n寄送提醒不會將案件標記為已閱讀或已備查。\n\n{PLATFORM_NAME}\n",
     "plainTextContentFile": "inspection-digest-template.txt",
     "enabled": false,
-    "version": 1,
+    "version": 2,
     "parameters": [
       "INSPECTION_OFFICE",
       "WINDOW_START",
@@ -20,7 +20,6 @@
       "TODAY_NEW_CASE_COUNT",
       "CARRYOVER_CASE_COUNT",
       "UNREAD_CASE_COUNT",
-      "CASE_LIST_URL",
       "PLATFORM_NAME"
     ]
   },
