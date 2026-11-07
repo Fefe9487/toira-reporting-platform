@@ -1,0 +1,46 @@
+{
+  "handoffOnly": true,
+  "note": "115年11月7日新增需求。供開發單位轉換登錄；尚未建置排程或寄信。HTML版本依相同參數另行建置，正式設定完成前保持停用。",
+  "template": {
+    "name": "勞檢機構新增危險作業通報案件彙整提醒",
+    "subject": "【危險作業通報】新增案件彙整提醒｜{INSPECTION_OFFICE}｜本批 {NEW_CASE_COUNT} 件",
+    "code": "HAZARD_INSPECTION_DIGEST",
+    "type": "EML",
+    "desc": "每12小時依機構彙整新增案件並提醒登入點閱；無新增不寄信，不附個別案件檔案。",
+    "content": "{INSPECTION_OFFICE} 您好：\n\n本批新增危險作業通報案件共 {NEW_CASE_COUNT} 件，請登入平台點閱。\n\n統計期間：{WINDOW_START} 至 {WINDOW_END}（臺灣時間；起點包含、終點不包含）\n統計截止：{CUTOFF_AT}（臺灣時間）\n本批新增：{NEW_CASE_COUNT} 件\n其中今日新增：{TODAY_NEW_CASE_COUNT} 件\n其中跨日補列：{CARRYOVER_CASE_COUNT} 件\n本批尚未點閱：{UNREAD_CASE_COUNT} 件（截至上述時間）\n\n登入平台查閱本批案件：\n{CASE_LIST_URL}\n\n完整案件資料及各版本通報 PDF 請登入後依權限查閱，本信不附個別案件檔案。\n本提醒每 12 小時彙整一次，沒有新增案件時不寄送。\n寄送提醒不會將案件標記為已閱讀或已備查。\n\n{PLATFORM_NAME}\n",
+    "plainTextContentFile": "inspection-digest-template.txt",
+    "enabled": false,
+    "version": 1,
+    "parameters": [
+      "INSPECTION_OFFICE",
+      "WINDOW_START",
+      "WINDOW_END",
+      "CUTOFF_AT",
+      "NEW_CASE_COUNT",
+      "TODAY_NEW_CASE_COUNT",
+      "CARRYOVER_CASE_COUNT",
+      "UNREAD_CASE_COUNT",
+      "CASE_LIST_URL",
+      "PLATFORM_NAME"
+    ]
+  },
+  "binding": {
+    "event": "HAZARD_INSPECTION_DIGEST",
+    "templateCode": "HAZARD_INSPECTION_DIGEST",
+    "trigger": "後端每12小時排程依機構建立有新增案件的彙整批次",
+    "toSource": "該批次機構由管理功能維護並核定的通知信箱",
+    "ccSource": null,
+    "bccSource": null,
+    "senderSource": "核定的郵件服務設定",
+    "attachments": []
+  },
+  "scheduleProposal": {
+    "timeZone": "Asia/Taipei",
+    "intervalHours": 12,
+    "suggestedLocalTimes": [
+      "08:00",
+      "20:00"
+    ],
+    "enabled": false
+  }
+}
