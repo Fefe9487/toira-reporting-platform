@@ -82,7 +82,7 @@ Q&A 內容維護於 `js/data/qa_content.json`，法條全文維護於 `js/data/q
 
 第四步確認頁、使用者案件檢視及通知附件已改用同一份通報文件模型，欄位與順序一致。第四步以編號分區及對齊資料列呈現，各區可返回修改；通知區列出確切的隨信 PDF 檔名並可下載預覽。隨信只有一份通報資料 PDF，包含完整通報欄位與一般／風險評估附件清單；原始檔案留存平台，不另夾入郵件。送出後保存當次文件快照，檢視、下載及重寄均使用該版本。詳見[三處內容對齊規格](docs/vendor-handoff/email-notification/report-document-alignment.md)。
 
-正式平台須納入「通報完成通知郵件」功能：寄給第四步確認的必填通知信箱，並副知管轄勞動檢查機構。該欄預設帳戶電子郵件，填報者可修改；後端須驗證並保存當次送出版本的收件地址。郵件主旨與內文須由既有「訊息範本維護」統一管理，寄信後端依範本代碼讀取及帶入案件資料。請資訊公司依[通知郵件交付文件](docs/vendor-handoff/email-notification/README.md)及[訊息範本連動規格](docs/vendor-handoff/email-notification/template-maintenance-integration.md)實作。
+正式平台須納入「通報完成通知郵件」功能：寄給第四步確認的必填通知信箱，Cc／Bcc 為空，不逐案副知勞檢。勞檢端改由後端每 12 小時依管轄機構寄送一封新增案件彙整提醒；沒有新增案件時不寄信，跨日未通知案件須補列。該欄預設帳戶電子郵件，填報者可修改；後端須驗證並保存當次送出版本的收件地址。郵件主旨與內文須由既有「訊息範本維護」統一管理，寄信後端依範本代碼讀取及帶入案件資料。請資訊公司依[通知郵件交付文件](docs/vendor-handoff/email-notification/README.md)、[勞檢每 12 小時彙整提醒規格](docs/vendor-handoff/email-notification/inspection-digest.md)及[訊息範本連動規格](docs/vendor-handoff/email-notification/template-maintenance-integration.md)實作。此為 115 年 11 月 7 日更新的開發需求，展示原型尚未啟用寄信或排程。
 
 交付文件包含郵件版型與格式規格。Q32 說明通知內容與手動重寄的收件方式；寄件信箱與部分細節仍待核定，主系統未接入實際寄信功能。QA 採手冊用途的功能敘述，建置狀態由本文件與交付規格記錄。
 
