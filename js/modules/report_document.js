@@ -66,11 +66,11 @@ function buildHazardReportDocument(data, version = 1) {
     items('subItems', '完整通報項目', scale ? data.scaleItems : data.subItems, '未提供通報項目')
   ]));
   const riskFields = [
-    field('riskMode', '風險評估方式', risk.mode === 'toira' ? 'TOiRA 線上風險評估' : risk.mode === 'upload' || riskFiles.length ? '自行上傳風險評估資料' : '未提供', true),
+    field('riskMode', '風險評估方式', risk.mode === 'toira' ? 'T-OiRA 線上互動式風險評估' : risk.mode === 'upload' || riskFiles.length ? '自行上傳風險評估資料' : '未提供', true),
     items('riskFiles', '風險評估檔案', riskFiles, '未提供評估檔案'),
     field('riskContentConfirmed', '評估內容與防護措施', confirmed(risk.contentConfirmed), true)
   ];
-  if (risk.mode === 'toira') riskFields.push(field('toiraReviewed', 'TOiRA 結果檢視與修正', confirmed(risk.toiraReviewed), true));
+  if (risk.mode === 'toira') riskFields.push(field('toiraReviewed', 'T-OiRA 結果檢視與修正', confirmed(risk.toiraReviewed), true));
   if (risk.reference) riskFields.push(field('riskReference', '評估紀錄編號', risk.reference, true));
   sections.push(section('risk', '風險評估資料', 3, riskFields));
   sections.push(section('attachments', '一般附件', 1, [items('attachments', '檔案清單', data.attachments, '無一般附件')]));

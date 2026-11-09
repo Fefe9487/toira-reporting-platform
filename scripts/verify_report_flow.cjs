@@ -143,7 +143,7 @@ test('人數、承攬商及附加點位改變須重新確認評估，但編輯�
   change(()=>s.element('hhNote').value='改變防護條件');
 });
 
-test('更換 TOiRA 評估檔案時撤回舊結果檢視確認',()=>{
+test('更換 T-OiRA 評估檔案時撤回舊結果檢視確認',()=>{
   const s=session();
   s.ctx.restoreHhRiskAssessment({riskAssessment:{mode:'toira',files:['原評估.pdf'],toiraReviewed:true}});
   s.element('hhRiskContentConfirmed').checked=true;

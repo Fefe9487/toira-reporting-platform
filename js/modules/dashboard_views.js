@@ -1502,7 +1502,7 @@
               <p class="flow-error" id="localWebsiteError" role="alert" hidden></p>
             </form>
           </section>
-          ${currentRole === 'admin' ? `<section class="toira-admin-settings"><h3>TOiRA 入口網址</h3><p>TOiRA 正式服務上線或網址變更時，可在此更新。</p><form onsubmit="event.preventDefault();saveToiraPortalUrl();"><label for="portalToiraUrl">TOiRA 網址</label><input id="portalToiraUrl" class="v-input" type="url" required value="${portalEscape(links.toiraUrl)}"><button type="submit" class="v-btn v-btn-primary">儲存 TOiRA 網址</button><p id="toiraSettingStatus" role="status"></p></form></section>` : ''}
+          ${currentRole === 'admin' ? `<section class="toira-admin-settings"><h3>T-OiRA 線上互動式風險評估入口網址</h3><p>T-OiRA 正式服務上線或網址變更時，可在此更新。</p><form onsubmit="event.preventDefault();saveToiraPortalUrl();"><label for="portalToiraUrl">T-OiRA 網址</label><input id="portalToiraUrl" class="v-input" type="url" required value="${portalEscape(links.toiraUrl)}"><button type="submit" class="v-btn v-btn-primary">儲存 T-OiRA 網址</button><p id="toiraSettingStatus" role="status"></p></form></section>` : ''}
         </div>`;
     }
     function canMaintainSpecialOfficeLinks() { return ['admin','inspection'].includes(window.currentRole); }
@@ -1633,7 +1633,7 @@
       const status = document.getElementById('toiraSettingStatus');
       if (!url) { status.textContent = '請填寫有效的 http:// 或 https:// 網址。'; input.focus(); return; }
       const config = getPortalLinks(); config.toiraUrl = url;
-      try { localStorage.setItem(PORTAL_CONFIG_KEY,JSON.stringify(config)); status.textContent = 'TOiRA 入口網址已更新。'; refreshPortalLinks(); }
+      try { localStorage.setItem(PORTAL_CONFIG_KEY,JSON.stringify(config)); status.textContent = 'T-OiRA 入口網址已更新。'; refreshPortalLinks(); }
       catch { status.textContent = '無法儲存設定，請確認瀏覽器允許網站儲存資料後重試。'; }
     }
 

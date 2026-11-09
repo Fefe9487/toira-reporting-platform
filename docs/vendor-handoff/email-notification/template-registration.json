@@ -3,7 +3,7 @@
   "note": "供資訊公司轉換並登錄至既有訊息範本維護；不是可直接呼叫的正式 API。寄件設定核定前保持停用。",
   "template": {
     "name": "危險作業通報完成通知",
-    "subject": "【TOiRA 危險作業通報】通報完成｜{CASE_NO}｜{WORK_NAME}",
+    "subject": "【危險作業通報】通報完成｜{CASE_NO}｜{WORK_NAME}",
     "code": "HAZARD_REPORT_SUBMITTED",
     "type": "EML",
     "desc": "案件成功收件後只通知第四步確認的信箱；勞檢另收每 12 小時新增案件彙整提醒。",

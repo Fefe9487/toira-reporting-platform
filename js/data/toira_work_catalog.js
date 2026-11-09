@@ -1,5 +1,5 @@
-// TOiRA 20261005h: exact assessment names from the user's task library.
-// Update this catalog and the explicit operation mapping together when TOiRA changes.
+// T-OiRA 20261005h: exact assessment names from the user's task library.
+// Update this catalog and the explicit operation mapping together when T-OiRA changes.
 // Mapping revision 20261015: high-place filming references all three filming scenarios.
 const HH_TOIRA_WORK_CATALOG = {
   "version": "20261005h",

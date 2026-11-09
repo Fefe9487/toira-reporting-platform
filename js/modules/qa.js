@@ -12,7 +12,7 @@
   const items = Array.from(document.querySelectorAll('.qa-item'));
   const groups = Array.from(document.querySelectorAll('.qa-group'));
   const categories = Array.from(document.querySelectorAll('[data-category-filter]'));
-  const normalize = text => text.normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+  const normalize = text => text.normalize('NFKC').toLowerCase().replace(/[\s-]+/g, '');
   const searchText = new Map(items.map(item => [item, normalize(item.textContent + ' ' + item.dataset.keywords)]));
   let currentCategory = 'all';
   const categoryTitle = () => categories.find(button => button.dataset.categoryFilter === currentCategory).querySelector('span').textContent;

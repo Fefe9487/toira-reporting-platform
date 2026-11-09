@@ -1,5 +1,5 @@
 {
-  "updatedDate": "115年11月7日",
+  "updatedDate": "115年11月9日",
   "categories": [
     {
       "id": "scope",
@@ -7,7 +7,7 @@
     },
     {
       "id": "assessment",
-      "title": "風險評估與 TOiRA"
+      "title": "風險評估與 T-OiRA"
     },
     {
       "id": "reporting",
@@ -134,9 +134,9 @@
     },
     {
       "number": 9,
-      "title": "一定要使用 TOiRA 才能進行風險評估嗎？",
+      "title": "一定要使用 T-OiRA 才能進行風險評估嗎？",
       "category": "assessment",
-      "answerHtml": "<p>不用。可自行完成符合本次實際作業的風險評估，再上傳評估結果或相關佐證資料；也可使用 TOiRA，依現場條件檢視、修正結果後再上傳。</p>\n<p>營造工程可參考職安署的營造工程風險評估技術指引。特定製程、工程、設備或作業另有法定評估要求者，仍應依其規定辦理。可參考<a href=\"https://www.osha.gov.tw/48110/48713/48735/212505/post\" target=\"_blank\" rel=\"noopener noreferrer\">職安署風險評估指引<span class=\"sr-only\">（另開新分頁）</span></a>。</p>",
+      "answerHtml": "<p>不用。可自行完成符合本次實際作業的風險評估，再上傳評估結果或相關佐證資料；也可使用 T-OiRA，依現場條件檢視、修正結果後再上傳。</p>\n<p>營造工程可參考職安署的營造工程風險評估技術指引。特定製程、工程、設備或作業另有法定評估要求者，仍應依其規定辦理。可參考<a href=\"https://www.osha.gov.tw/48110/48713/48735/212505/post\" target=\"_blank\" rel=\"noopener noreferrer\">職安署風險評估指引<span class=\"sr-only\">（另開新分頁）</span></a>。</p>",
       "lawIds": [],
       "keywords": "自行上傳 工具 二擇一",
       "noticePoints": [
@@ -183,9 +183,9 @@
     },
     {
       "number": 13,
-      "title": "第三步的 TOiRA 評估項目建議怎麼用？",
+      "title": "第三步的 T-OiRA 評估項目建議怎麼用？",
       "category": "assessment",
-      "answerHtml": "<p>平台依第二步勾選的通報作業，列出可參考的 TOiRA 項目。前往 TOiRA 後，可以用這些名稱搜尋，再選擇符合實際作業的情境，並檢視、修正評估結果。</p>\n<p>一項通報作業可能對應多個評估項目，同一評估項目會合併列示。這份對照協助查找，不代表已完成評估，也不代表畫面列出的每項建議都一律要各做一份；評估仍須涵蓋本次全部實際作業及其相互影響。</p>",
+      "answerHtml": "<p>平台依第二步勾選的通報作業，列出可參考的 T-OiRA 項目。前往 T-OiRA 後，可以用這些名稱搜尋，再選擇符合實際作業的情境，並檢視、修正評估結果。</p>\n<p>一項通報作業可能對應多個評估項目，同一評估項目會合併列示。這份對照協助查找，不代表已完成評估，也不代表畫面列出的每項建議都一律要各做一份；評估仍須涵蓋本次全部實際作業及其相互影響。</p>",
       "lawIds": [],
       "keywords": "TOIRA 作業清單 資料庫 對照 推薦 映射 對照 多情境",
       "noticePoints": [
@@ -195,9 +195,9 @@
     },
     {
       "number": 14,
-      "title": "在 TOiRA 完成評估後，還要回到通報平台嗎？",
+      "title": "在 T-OiRA 完成評估後，還要回到通報平台嗎？",
       "category": "assessment",
-      "answerHtml": "<p>需要。先確認並修正 TOiRA 評估結果，再回到本平台第三步上傳，完成第四步的資料確認與送出。</p>\n<p>在 TOiRA 完成評估不會自動完成危險作業通報；上傳檔案後，也仍須完成最後送出。</p>",
+      "answerHtml": "<p>需要。先確認並修正 T-OiRA 評估結果，再回到本平台第三步上傳，完成第四步的資料確認與送出。</p>\n<p>在 T-OiRA 完成評估不會自動完成危險作業通報；上傳檔案後，也仍須完成最後送出。</p>",
       "lawIds": [],
       "keywords": "TOIRA 返回 上傳 附件 完成評估",
       "noticePoints": [
@@ -248,7 +248,7 @@
       "number": 18,
       "title": "通報流程有哪些步驟？",
       "category": "reporting",
-      "answerHtml": "<ol><li><strong>填報作業資訊：</strong>填寫通報者、施作單位、聯絡人及作業地點。</li><li><strong>選擇危險作業：</strong>填寫作業名稱與期間，勾選符合的通報項目。</li><li><strong>實施風險評估：</strong>上傳自行評估資料，或檢視、修正後的 TOiRA 評估結果。</li><li><strong>確認通報資料：</strong>核對內容、附件與通知收件電子郵件，再送出通報並確認案件紀錄。</li></ol>",
+      "answerHtml": "<ol><li><strong>填報作業資訊：</strong>填寫通報者、施作單位、聯絡人及作業地點。</li><li><strong>選擇危險作業：</strong>填寫作業名稱與期間，勾選符合的通報項目。</li><li><strong>實施風險評估：</strong>上傳自行評估資料，或檢視、修正後的 T-OiRA 評估結果。</li><li><strong>確認通報資料：</strong>核對內容、附件與通知收件電子郵件，再送出通報並確認案件紀錄。</li></ol>",
       "lawIds": [],
       "keywords": "四步驟 操作",
       "noticePoints": [
