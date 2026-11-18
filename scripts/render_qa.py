@@ -56,9 +56,12 @@ def render(content, laws, current):
     current = re.sub(r'資料更新：[^<]+', '資料更新：' + content['updatedDate'], current, count=1)
     current = re.sub(r'全部問題，共 \d+ 題', f'全部問題，共 {len(questions)} 題', current)
     counts = {'all':len(questions), **{key:sum(q['category']==key for q in questions) for key in categories}}
-    for key, count in counts.items():
-        pattern = r'(data-category-filter="' + re.escape(key) + r'"[^>]*>.*?<span class="qa-category-count">)\d+(</span>)'
-        current = re.sub(pattern, lambda m: m[1]+str(count)+m[2], current, count=1)
+    filters = []
+    for key, title in [('all', '全部問題'), *[(c['id'], c['title']) for c in content['categories']]]:
+        active = ' active' if key == 'all' else ''
+        pressed = 'true' if key == 'all' else 'false'
+        filters.append(f'<button type="button" class="qa-category{active}" data-category-filter="{escape(key, quote=True)}" aria-pressed="{pressed}"><span>{escape(title)}</span><span class="qa-category-count">{counts[key]}</span></button>')
+    current = re.sub(r'(<div class="qa-categories">).*?(</div>)', lambda m: m[1]+''.join(filters)+m[2], current, count=1, flags=re.S)
     return current
 
 
