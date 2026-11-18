@@ -18,17 +18,24 @@
   function documentRow(item) {
     if (!item || typeof item.title !== 'string' || !item.title.trim() || typeof item.file !== 'string') throw new Error('Invalid document');
     const url = new URL(item.file, document.baseURI);
-    if (url.origin !== base.origin || !url.pathname.startsWith(base.pathname) || url.pathname === base.pathname || url.search || url.hash) throw new Error('Invalid file path');
+    const local = url.origin === base.origin && url.pathname.startsWith(base.pathname) && url.pathname !== base.pathname && !url.search && !url.hash;
+    const official = url.protocol === 'https:' && url.hostname === 'www.osha.gov.tw' && !url.port && !url.username && !url.password && url.pathname.startsWith('/media/') && url.pathname.toLowerCase().endsWith('.pdf') && (!url.search || url.search === '?mediaDL=true') && !url.hash;
+    if (!local && !official) throw new Error('Invalid file path');
     const row = element('li', 'download-item', '');
     const info = element('div', 'download-item-info', '');
     info.append(element('h3', '', item.title));
     if (item.description) info.append(element('p', 'download-item-description', item.description));
     const metadata = [item.updated ? '更新日期：' + item.updated : '', item.format || '', item.size || ''].filter(Boolean);
     if (metadata.length) info.append(element('p', 'download-item-meta', metadata.join('　｜　')));
-    const link = element('a', 'download-link', '下載 ↓');
+    const link = element('a', 'download-link', official ? '下載 PDF ↗' : '下載 ↓');
     link.href = url.href;
-    link.download = '';
-    link.setAttribute('aria-label', '下載 ' + item.title + (item.format ? '（' + item.format + '）' : ''));
+    if (official) {
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    } else {
+      link.download = '';
+    }
+    link.setAttribute('aria-label', '下載 ' + item.title + (item.format ? '（' + item.format + '）' : '') + (official ? '，另開新分頁' : ''));
     row.append(info, link);
     return row;
   }

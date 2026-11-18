@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "title": "風險評估指引",
+    "description": "職安署提供，供事業單位規劃及執行風險評估與管理參考。",
+    "updated": "115 年 9 月 22 日",
+    "format": "PDF",
+    "file": "https://www.osha.gov.tw/media/vg2bg22u/風險評估指引.pdf?mediaDL=true"
+  },
+  {
+    "title": "營造工程風險評估技術指引（第三版）",
+    "description": "職安署提供，供營造工程規劃、設計、施工及使用階段的風險評估與管理參考。",
+    "updated": "114 年 2 月 13 日",
+    "format": "PDF",
+    "file": "https://www.osha.gov.tw/media/tpgfsyrb/營造工程風險評估技術指引-第三版.pdf?mediaDL=true"
+  }
+]
