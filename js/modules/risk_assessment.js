@@ -5,6 +5,11 @@ let hhRiskFiles = { upload: [], toira: [] };
 let hhRiskEditingExisting = false;
 // Enable only after the T-OiRA service confirms that record numbers are provided.
 const HH_TOIRA_REFERENCE_ENABLED = false;
+const HH_TOIRA_BLOCKED_WORKS = new Map([
+  ['petrochemical', '石化業廠場歲修'],
+  ['deep-excavation', '開挖擋土支撐'],
+  ['formwork', '灌漿模板支撐']
+]);
 const HH_TOIRA_USAGE_CHECKS = [
   ['scope', '適用範圍', 'T-OiRA 主要供員工規模 100 人以下的中小企業進行初步風險評估。危險性工作場所的申請、定期評估或製程修改，或一定規模以上之事業單位，不適用本輔助工具；應依法採用正式評估方法，並由具專業能力人員執行完整、系統化評估。'],
   ['auxiliary', '僅為輔助工具', '評估結果依使用者輸入產生，不能取代現場調查、專業判斷或法定的正式風險評估。'],
@@ -23,9 +28,10 @@ function getHhRiskStepHtml() {
   return `<div id="hhStep3Pane" class="step-pane">
     <div class="dispatch-tip"><strong>第三步：實施風險評估</strong><br>依實際作業內容與現場條件完成評估，確認防護措施後再通報。請選擇以下其中一種方式。</div>
     <fieldset class="risk-choice-group"><legend class="sr-only">風險評估方式（擇一）</legend>
-      <label class="risk-choice selected" id="hhRiskChoiceUpload"><input type="radio" name="hhRiskMethod" value="upload" checked onchange="setHhRiskMode('upload')"><span><strong>自行上傳風險評估資料</strong><small>已有評估結果或佐證資料，直接附上檔案。</small></span></label>
-      <label class="risk-choice" id="hhRiskChoiceToira"><input type="radio" name="hhRiskMethod" value="toira" onchange="setHhRiskMode('toira')"><span><strong>使用 T-OiRA 線上互動式風險評估</strong><small>使用線上工具完成評估，再回到本平台附上結果。</small></span></label>
+      <label class="risk-choice selected" id="hhRiskChoiceUpload"><input type="radio" name="hhRiskMethod" value="upload" id="hhRiskMethodUpload" checked aria-describedby="hhToiraUnavailable" onchange="setHhRiskMode('upload')"><span><strong>自行上傳風險評估資料</strong><small>已有評估結果或佐證資料，直接附上檔案。</small></span></label>
+      <label class="risk-choice" id="hhRiskChoiceToira"><input type="radio" name="hhRiskMethod" value="toira" id="hhRiskMethodToira" onchange="setHhRiskMode('toira')"><span><strong>使用 T-OiRA 線上互動式風險評估</strong><small>使用線上工具完成評估，再回到本平台附上結果。</small></span></label>
     </fieldset>
+    <p id="hhToiraUnavailable" class="risk-upload-status has-error" role="status"></p>
     <section id="hhToiraNotice" class="toira-usage-notice" aria-labelledby="hhToiraNoticeTitle" hidden>
       <h4 id="hhToiraNoticeTitle"><span aria-hidden="true">⚠</span> 使用 T-OiRA 前，請確認適用範圍與法律責任</h4>
       <p id="hhToiraNoticeHelp">請逐項閱讀並勾選確認；下列 ${HH_TOIRA_USAGE_CHECKS.length} 項皆須勾選，才能前往工具進行評估。勾選「適用範圍」表示確認本次使用符合該範圍。</p>
@@ -64,8 +70,15 @@ function getHhRiskStepHtml() {
   </div>`;
 }
 function resetHhRiskAssessment() { hhRiskContext = ''; hhRiskMode = 'upload'; hhRiskFiles = { upload: [], toira: [] }; hhRiskEditingExisting = false; }
+function getHhToiraBlockedWorkLabels() {
+  return [...document.querySelectorAll('#hhItemsGroup .sub-items-container input:checked')]
+    .map(input => HH_TOIRA_BLOCKED_WORKS.get(input.dataset.workId))
+    .filter(Boolean);
+}
 function setHhRiskMode(mode) {
   if (!['upload','toira'].includes(mode)) return;
+  const blockedWorks = getHhToiraBlockedWorkLabels();
+  if (mode === 'toira' && blockedWorks.length) mode = 'upload';
   const changed = hhRiskMode !== mode;
   hhRiskMode = mode;
   if (changed) {
@@ -74,7 +87,7 @@ function setHhRiskMode(mode) {
     document.getElementById('hhToiraReviewed').checked = false;
   }
   document.getElementById('hhRiskUploadPanel').hidden = mode !== 'upload';
-  syncHhToiraAccess();
+  syncHhToiraAccess(blockedWorks);
   document.getElementById('hhRiskChoiceUpload').classList.toggle('selected',mode === 'upload');
   document.getElementById('hhRiskChoiceToira').classList.toggle('selected',mode === 'toira');
   document.querySelectorAll('[name="hhRiskMethod"]').forEach(r => {r.checked = r.value === mode;});
@@ -90,11 +103,17 @@ function isHhToiraAcknowledged() {
 function resetHhToiraUsageChecks() {
   HH_TOIRA_USAGE_CHECKS.forEach(([id]) => { document.getElementById('hhToiraCheck-' + id).checked = false; });
 }
-function syncHhToiraAccess() {
+function syncHhToiraAccess(blockedWorks = getHhToiraBlockedWorkLabels()) {
+  const blocked = blockedWorks.length > 0;
+  document.getElementById('hhRiskMethodToira').disabled = blocked;
+  document.getElementById('hhToiraUnavailable').textContent = blocked
+    ? '本次通報包含「' + blockedWorks.join('」、「') + '」，無法使用 T-OiRA。請自行上傳涵蓋本次全部作業的風險評估資料。'
+    : '';
   const checks = Object.values(getHhToiraUsageChecks());
   const confirmed = checks.filter(Boolean).length;
-  const allowed = hhRiskMode === 'toira' && (hhRiskEditingExisting || isHhToiraAcknowledged());
-  document.getElementById('hhToiraNotice').hidden = hhRiskMode !== 'toira' || hhRiskEditingExisting;
+  const usingToira = hhRiskMode === 'toira' && !blocked;
+  const allowed = usingToira && (hhRiskEditingExisting || isHhToiraAcknowledged());
+  document.getElementById('hhToiraNotice').hidden = !usingToira || hhRiskEditingExisting;
   document.getElementById('hhToiraRecommendations').hidden = !allowed;
   document.getElementById('hhRiskToiraPanel').hidden = !allowed;
   document.getElementById('hhToiraChecklistStatus').textContent = '已確認 ' + confirmed + ' / ' + checks.length + ' 項，' + (allowed ? '可前往 T-OiRA 進行評估。' : '請完成全部檢核。');
@@ -114,6 +133,10 @@ function renderHhRiskFiles(mode) {
 }
 function removeHhRiskFile(mode,index) { hhRiskFiles[mode].splice(index,1); document.getElementById('hhRiskContentConfirmed').checked = false; if (mode === 'toira') document.getElementById('hhToiraReviewed').checked = false; renderHhRiskFiles(mode); }
 function handleHhRiskAssessmentUpload(input, mode = 'upload') {
+  if (mode === 'toira' && getHhToiraBlockedWorkLabels().length) {
+    input.value = '';
+    return;
+  }
   const files = Array.from(input.files || []);
   const rejected = [];
   let added = 0;
@@ -133,7 +156,8 @@ function handleHhRiskAssessmentUpload(input, mode = 'upload') {
 }
 function validateHhRiskAssessment() {
   let message = '', focusId = '';
-  if (hhRiskMode === 'toira' && !hhRiskEditingExisting && !isHhToiraAcknowledged()) { message = '請逐項勾選確認 T-OiRA 的適用範圍、使用限制及法律責任；不符合適用範圍時，請改用自行上傳風險評估資料。'; focusId = 'hhToiraCheck-' + HH_TOIRA_USAGE_CHECKS.find(([id]) => !document.getElementById('hhToiraCheck-' + id)?.checked)[0]; }
+  if (hhRiskMode === 'toira' && getHhToiraBlockedWorkLabels().length) { message = '本次通報無法使用 T-OiRA。請自行上傳風險評估資料。'; focusId = 'hhRiskMethodUpload'; }
+  else if (hhRiskMode === 'toira' && !hhRiskEditingExisting && !isHhToiraAcknowledged()) { message = '請逐項勾選確認 T-OiRA 的適用範圍、使用限制及法律責任；不符合適用範圍時，請改用自行上傳風險評估資料。'; focusId = 'hhToiraCheck-' + HH_TOIRA_USAGE_CHECKS.find(([id]) => !document.getElementById('hhToiraCheck-' + id)?.checked)[0]; }
   else if (!hhRiskFiles[hhRiskMode].length) { message = hhRiskMode === 'toira' ? '請先完成 T-OiRA 評估，並上傳評估結果。' : '請上傳本次風險評估結果或相關佐證資料。'; focusId = hhRiskMode === 'toira' ? 'hhToiraAssessmentInput' : 'hhRiskAssessmentInput'; }
   else if (hhRiskMode === 'toira' && !document.getElementById('hhToiraReviewed').checked) { message = '請確認已依實際現場情況檢視、修正 T-OiRA 評估結果。'; focusId = 'hhToiraReviewed'; }
   else if (!document.getElementById('hhRiskContentConfirmed').checked) { message = '請確認評估資料涵蓋六項內容及各項作業，並於作業前落實預防設備與措施。'; focusId = 'hhRiskContentConfirmed'; }
@@ -176,7 +200,7 @@ function restoreHhRiskAssessment(data) {
   syncHhToiraAccess();
   renderHhRiskFiles('upload'); renderHhRiskFiles('toira');
   if (HH_TOIRA_REFERENCE_ENABLED && document.getElementById('hhToiraReference')) document.getElementById('hhToiraReference').value = assessment.reference || '';
-  document.getElementById('hhToiraReviewed').checked = !!assessment.toiraReviewed;
+  document.getElementById('hhToiraReviewed').checked = hhRiskMode === 'toira' && !!assessment.toiraReviewed;
   // Require renewed confirmation when editing an existing report.
   document.getElementById('hhRiskContentConfirmed').checked = false;
 }
@@ -192,11 +216,16 @@ function syncHhRiskContext() {
   const extraPoints = [...document.querySelectorAll('#hhExtraPointsContainer .extra-point-row')].map(row=>[row.querySelector('.extra-point-desc')?.value.trim(),row.querySelector('.extra-point-gps')?.value.trim()]);
   const contractors = hasContractors ? [...document.querySelectorAll('#hhContractorRows .contractor-input')].map(input=>input.value.trim()) : [];
   const context = JSON.stringify([fields.map(id=>document.getElementById(id)?.value),hasContractors,contractors,document.getElementById('hhInPark')?.checked,document.getElementById('hhCrossCheck')?.checked,[...document.querySelectorAll('.cross-admin-cb:checked')].map(cb=>cb.value),extraPoints,[...document.querySelectorAll('#hhItemsGroup .sub-items-container input:checked')].map(cb=>cb.closest('label').textContent.trim())]);
-  if (hhRiskContext && hhRiskContext !== context) {
+  const changed = hhRiskContext && hhRiskContext !== context;
+  if (changed) {
     document.getElementById('hhRiskContentConfirmed').checked = false;
     document.getElementById('hhToiraReviewed').checked = false;
     if (!hhRiskEditingExisting) resetHhToiraUsageChecks();
-    syncHhToiraAccess();
+  }
+  const blockedWorks = getHhToiraBlockedWorkLabels();
+  if (hhRiskMode === 'toira' && blockedWorks.length) setHhRiskMode('upload');
+  else syncHhToiraAccess(blockedWorks);
+  if (changed) {
     const status = document.getElementById('hhRiskUploadStatus');
     status.textContent = '作業內容、現場條件或人員配置已有變更，請重新確認評估資料是否符合本次作業。';
     status.classList.add('has-error');

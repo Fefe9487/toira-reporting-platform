@@ -152,6 +152,54 @@ test('更換 T-OiRA 評估檔案時撤回舊結果檢視確認',()=>{
   assert.equal(s.element('hhRiskContentConfirmed').checked,false);
 });
 
+test('三項受限作業各自或混合勾選時，一律改用自行上傳',()=>{
+  const s=session();
+  const work=id=>({dataset:{workId:id},closest:()=>({textContent:id})});
+  const select=(...ids)=>s.selectors.set('#hhItemsGroup .sub-items-container input:checked',ids.map(work));
+  select('roof');
+  s.ctx.setHhRiskMode('toira');
+  for (const [id,label] of [['petrochemical','石化業廠場歲修'],['deep-excavation','開挖擋土支撐'],['formwork','灌漿模板支撐']]) {
+    for (const ids of [[id],[id,'roof']]) {
+      select(...ids);
+      s.ctx.syncHhRiskContext();
+      s.ctx.setHhRiskMode('toira');
+      assert.equal(s.ctx.getHhRiskAssessmentData().mode,'upload');
+      assert.equal(s.element('hhRiskMethodToira').disabled,true);
+      assert.equal(s.element('hhToiraNotice').hidden,true);
+      assert.equal(s.element('hhToiraRecommendations').hidden,true);
+      assert.equal(s.element('hhRiskToiraPanel').hidden,true);
+      assert.equal(s.element('hhRiskUploadPanel').hidden,false);
+      assert.ok(s.element('hhToiraUnavailable').textContent.includes(label));
+    }
+  }
+  select('roof');
+  s.ctx.syncHhRiskContext();
+  assert.equal(s.element('hhRiskMethodToira').disabled,false);
+  assert.equal(s.element('hhToiraUnavailable').textContent,'');
+  s.ctx.setHhRiskMode('toira');
+  assert.equal(s.ctx.getHhRiskAssessmentData().mode,'toira');
+  assert.equal(s.element('hhToiraNotice').hidden,false);
+});
+
+test('受限作業拒絕殘留的 T-OiRA 模式與附件，舊案須改用自行上傳',()=>{
+  const s=session();
+  const saved={riskAssessment:{mode:'toira',files:['舊評估.pdf'],toiraReviewed:true}};
+  s.ctx.restoreHhRiskAssessment(saved);
+  s.element('hhRiskContentConfirmed').checked=true;
+  s.selectors.set('#hhItemsGroup .sub-items-container input:checked',[{dataset:{workId:'petrochemical'}}]);
+  assert.equal(s.ctx.validateHhRiskAssessment(),false);
+  assert.match(s.element('hhRiskError').textContent,/自行上傳/);
+  s.ctx.handleHhRiskAssessmentUpload({files:[{name:'新評估.pdf',size:30}],value:''},'toira');
+  assert.deepEqual(plain(s.ctx.getHhRiskAssessmentData().files),['舊評估.pdf']);
+
+  s.ctx.restoreHhRiskAssessment(saved);
+  assert.equal(s.ctx.getHhRiskAssessmentData().mode,'upload');
+  assert.deepEqual(plain(s.ctx.getHhRiskAssessmentData().files),[]);
+  s.ctx.handleHhRiskAssessmentUpload({files:[{name:'自行評估.pdf',size:30}],value:''},'upload');
+  s.element('hhRiskContentConfirmed').checked=true;
+  assert.equal(s.ctx.validateHhRiskAssessment(),true);
+});
+
 test('日期、期間及危險作業必須有效，且最終送出會重新驗證',()=>{
   const s=session();
   s.element('hhWorkName').value='測試作業';

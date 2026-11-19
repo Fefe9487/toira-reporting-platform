@@ -541,6 +541,7 @@ body {
     }
     .footer-meta span {
       display: inline-block;
+      vertical-align: top;
       margin-right: 18px;
     }
     .accessibility-badge {
