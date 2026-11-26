@@ -18,16 +18,16 @@ function buildHazardReportDocument(data, version = 1) {
   const sections = [
     section('overview', '作業概況', 2, [
       field('workName', '作業名稱', data.workName, true),
-      field('caseType', '通報類型', scale ? '一定規模以上營造業通報' : '危險作業通報'),
+      field('caseType', '通報類型', scale ? '一定規模以上工程開工或重大變更通報' : '危險作業通報'),
       field('workPeriod', '預期作業期間', `${text(data.startDate)} ～ ${text(data.endDate)}`),
       field('region', '作業縣市／鄉鎮市區', [data.city, data.dist].filter(Boolean).join(' ')),
       field('adminOffice', '所屬勞動檢查單位', data.adminOffice),
       field('industrialPark', '產業園區', text(data.industrialPark, '否'), true)
     ]),
     section('notifier', '通報者資訊', 1, [
-      field('notifierCompany', '事業單位名稱', data.notifierCompany, true),
+      field('notifierCompany', scale ? '工程業主（代表）名稱' : '事業單位名稱', data.notifierCompany, true),
       field('notifierName', '通報人（職稱）', data.notifierName),
-      field('notifierPhone', '聯絡電話', data.notifierPhone),
+      field('notifierPhone', scale ? '連絡方式' : '聯絡電話', data.notifierPhone),
       field('relation', '是否交付承攬', data.relation === '交付承攬' ? '是' : '否')
     ]),
     section('operator', '作業者資訊', 1, [
@@ -42,7 +42,7 @@ function buildHazardReportDocument(data, version = 1) {
   ];
   sections[0].editActions = [{step:2,label:'修改名稱／期間'},{step:1,label:'修改地區／管轄'}];
   if (scale) sections.push(section('construction', '營造工程資訊', 1, [
-    field('reportKind', '通報種類', data.reportKind === 'major' ? '重大變更' : '新增通報'),
+    field('reportKind', '通報種類', data.reportKind === 'major' ? '重大變更' : '開工'),
     field('buildingPermit', '建造執照', data.buildingPermit),
     field('siteAddress', '工程地號／地址', data.siteAddress, true)
   ]));

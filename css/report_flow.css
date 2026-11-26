@@ -103,6 +103,69 @@
       cursor: pointer;
       line-height: 1.5;
     }
+    .scale-change-details {
+      margin: 8px 0 4px;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .scale-change-values:not([hidden]) {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+      gap: 10px;
+    }
+    .scale-change-values label,
+    .scale-change-details > label {
+      display: block;
+      color: #334155;
+      font-size: 14px;
+      cursor: default;
+    }
+    .scale-change-values .search-input,
+    .scale-change-details textarea {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      margin-top: 4px;
+    }
+    .scale-change-details .scale-change-values {
+      margin-bottom: 10px;
+    }
+    .scale-change-summary {
+      margin-block: 8px;
+      overflow-wrap: anywhere;
+    }
+    .scale-change-note {
+      white-space: pre-wrap;
+    }
+    @media (max-width: 600px) {
+      .v-dialog-card:has(.scale-report-flow) .v-dialog-title {
+        display: block;
+        min-width: 0;
+      }
+      .v-dialog-card:has(.scale-report-flow) .v-dialog-title > span {
+        display: block;
+        margin-top: 4px;
+      }
+      .scale-report-flow .form-field-group {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 6px;
+      }
+      .scale-report-flow .form-field-group > label {
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        text-align: left;
+        white-space: normal;
+      }
+      .scale-report-flow #scaleItemsChange .sub-items-container {
+        margin-left: 0;
+        padding: 12px;
+      }
+    }
     .dispatch-tip {
       background: #ecfdf5;
       border: 1px solid #a7f3d0;

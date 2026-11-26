@@ -8,24 +8,51 @@
     let currentScaleMode = 'add';
     let currentScaleCaseNo = '';
     let currentScaleStep = 1;
+    const scaleReportTitle = '一定規模以上工程開工或重大變更通報';
+    const scaleMajorCategory = '一、下列事項變更達原規模百分之五十以上者';
+    const scaleMajorMeasures = [
+      ['amount', '工程金額', '新臺幣元'],
+      ['height', '建築高度', '公尺'],
+      ['depth', '開挖深度', '公尺'],
+      ['area', '基地面積', '平方公尺'],
+      ['length', '橋梁或隧道長度', '公尺']
+    ];
 
     function toggleScaleCivilItems() {
       const kind = document.getElementById('scaleReportKind')?.value;
       const newItems = document.getElementById('scaleItemsNew');
       const changeItems = document.getElementById('scaleItemsChange');
+      const majorInfo = document.getElementById('scaleMajorInfo');
+      if (majorInfo) majorInfo.hidden = kind !== 'major';
       if (newItems && changeItems) {
         newItems.style.display = (kind === 'major' ? 'none' : 'block');
         changeItems.style.display = (kind === 'major' ? 'block' : 'none');
       }
     }
 
-    function toggleScaleReasonBox(cb) {
-      const reasonKey = cb.getAttribute('data-reason');
-      const ta = document.querySelector(`.scale-reason-textarea[data-for="${reasonKey}"]`);
-      if (ta) {
-        ta.style.display = cb.checked ? 'block' : 'none';
-        if (!cb.checked) ta.value = '';
-      }
+    function toggleScaleChangeDetails(checkbox) {
+      const details = checkbox.closest('.scale-change-item').querySelector('.scale-change-details');
+      details.hidden = !checkbox.checked;
+      if (details.hidden) details.querySelectorAll('input, textarea').forEach(field => { field.value = ''; });
+    }
+
+    function renderScaleChangeItem(id, label, unit) {
+      const fieldId = `scale-change-${id}`;
+      const numericFields = unit ? `
+        <div class="scale-change-values">
+          <label for="${fieldId}-before">變更前（${unit}）<input id="${fieldId}-before" class="search-input" type="number" min="0" step="any" data-change-field="before"></label>
+          <label for="${fieldId}-after">變更後（${unit}）<input id="${fieldId}-after" class="search-input" type="number" min="0" step="any" data-change-field="after"></label>
+          <label for="${fieldId}-percent">變更百分比（%）<input id="${fieldId}-percent" class="search-input" type="number" step="any" data-change-field="percent"></label>
+        </div>` : '';
+      return `
+        <div class="scale-change-item" data-unit="${unit || ''}">
+          <label for="${fieldId}"><input id="${fieldId}" type="checkbox" value="${label}" onchange="toggleScaleChangeDetails(this)"> ${label}</label>
+          <div class="scale-change-details" hidden>
+            ${numericFields}
+            <label for="${fieldId}-reason">${unit ? '變更原因' : '變更說明'}</label>
+            <textarea id="${fieldId}-reason" class="search-input" maxlength="500" rows="2" data-change-field="reason"></textarea>
+          </div>
+        </div>`;
     }
 
     function toggleScaleSubItems(mainCb) {
@@ -37,8 +64,10 @@
       } else {
         container.style.display = 'none';
         container.classList.remove('active');
-        container.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-        container.querySelectorAll('textarea').forEach(t => { t.value = ''; t.style.display = 'none'; });
+        container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+          checkbox.checked = false;
+          if (checkbox.closest('.scale-change-item')) toggleScaleChangeDetails(checkbox);
+        });
       }
     }
 
@@ -68,7 +97,6 @@
         const contact = document.getElementById('scaleContact')?.value;
         const phone = document.getElementById('scalePhone')?.value;
         const notifierCompany = document.getElementById('scaleNotifierCompany')?.value;
-        const notifierPhone = document.getElementById('scaleNotifierPhone')?.value;
 
         if (!city) {
           alert('請選擇工程所在監管縣市！');
@@ -89,7 +117,7 @@
           return;
         }
         if (!notifierCompany) {
-          alert('請輸入通報者事業單位名稱！');
+          alert('請輸入工程業主（代表）名稱！');
           return;
         }
       }
@@ -112,10 +140,17 @@
 
         const kind = document.getElementById('scaleReportKind')?.value;
         const groupContainer = (kind === 'major') ? document.getElementById('scaleItemsChange') : document.getElementById('scaleItemsNew');
-        const checkedBoxes = groupContainer ? groupContainer.querySelectorAll('input[type="checkbox"]:checked') : [];
-        if (checkedBoxes.length === 0) {
+        const checkedBoxes = groupContainer?.querySelectorAll('input[type="checkbox"]:checked:not(.main-category-label input)');
+        if (!checkedBoxes?.length) {
           alert('請至少勾選一項一定規模通報項目！');
           return;
+        }
+
+        if (kind === 'major') {
+          const majorFields = document.querySelectorAll('#scaleMajorInfo input, #scaleItemsChange .scale-change-details:not([hidden]) input');
+          for (const field of majorFields) {
+            if (!field.reportValidity()) return;
+          }
         }
 
         generateScaleFinalSummary();
@@ -150,7 +185,9 @@
       const buildingPermit = document.getElementById('scaleBuildingPermit')?.value || '無 (選填)';
       const siteAddress = document.getElementById('scaleSiteAddress')?.value || '未填寫';
       const isMajor = document.getElementById('scaleReportKind')?.value === 'major';
-      const reportKindText = isMajor ? '重大變更' : '新增通報';
+      const reportKindText = isMajor ? '重大變更' : '開工';
+      const majorNumber = document.getElementById('scaleMajorNumber')?.value || '未填寫';
+      const majorDate = document.getElementById('scaleMajorDate')?.value || '未填寫';
       const startDate = document.getElementById('scaleStartDate')?.value || '2026-09-25';
       const endDate = document.getElementById('scaleEndDate')?.value || '2027-03-31';
 
@@ -202,6 +239,8 @@
           <div><strong>建照字號：</strong> <span style="color:#334155; font-weight:600;">${buildingPermit}</span></div>
           <div style="grid-column:span 2;"><strong>基地地號/地址：</strong> <span style="color:#1e293b; font-weight:600;">${siteAddress}</span></div>
           <div><strong>通報種類：</strong> <span style="color:#0288d1; font-weight:600;">${reportKindText}</span></div>
+          ${isMajor ? `<div><strong>重大變更次數：</strong> ${portalEscape(majorNumber)}</div>
+          <div><strong>重大變更日期：</strong> ${portalEscape(majorDate)}</div>` : ''}
           <div><strong>預定開始日：</strong> <span style="color:#059669; font-weight:600;">${startDate}</span></div>
           <div><strong>所在地區與管轄單位：</strong> <span style="color:#334155;">${city} ${dist} (${admin})</span></div>
           <div><strong>跨轄區副知機關：</strong> ${isCross ? (crossAdmins.length > 0 ? crossAdmins.join('、') : '<span style="color:#f59e0b;">已勾選跨轄區，未指定副知單位</span>') : '無 (非跨轄區)'}</div>
@@ -210,7 +249,7 @@
           <div><strong>現場聯絡人：</strong> ${contact} (電話: ${phone})</div>
           <div><strong>現場作業人數：</strong> 約 ${workers} 人</div>
           <div style="grid-column:span 2; border-top:1px dashed #cbd5e1; padding-top:10px; margin-top:6px;">
-            <strong>通報者資訊：</strong> ${notifierCompany} (行動電話: ${notifierPhone || '未填寫'}，關係: ${relation})
+            <strong>工程業主（代表）名稱：</strong> ${portalEscape(notifierCompany)}（連絡方式：${portalEscape(notifierPhone)}，通報關係：${portalEscape(relation)}）
           </div>
         </div>
       `;
@@ -243,40 +282,30 @@
         });
         selectedHtml = items.length > 0 ? items.join('') : '<span style="color:#64748b; font-size: 15px;">未勾選項目</span>';
       } else {
-        const items = [];
-        document.querySelectorAll('#scaleItemsChange .checkbox-item').forEach(item => {
-          const mainCb = item.querySelector('.main-category-label input[type="checkbox"]');
-          if (mainCb && mainCb.checked) {
-            const subList = [];
-            item.querySelectorAll('.sub-items-container input[type="checkbox"]:checked').forEach(cb => {
-              const label = cb.getAttribute('data-reason') || cb.parentNode.textContent.trim();
-              const ta = item.querySelector(`.scale-reason-textarea[data-for="${label}"]`);
-              const reason = ta?.value?.trim() || '未填寫原因說明';
-              subList.push(`
-                <li style="margin-bottom:8px;">
-                  <strong style="font-size: 15.5px;">${label}</strong>
-                  <div style="background:#f1f5f9; padding: 8px 12px; border-radius:4px; font-size: 14.5px; color:#475569; margin-top:3px;">變更原因：${reason}</div>
-                </li>
-              `);
-            });
-            if (subList.length > 0) {
-              items.push(`
-                <div style="margin-bottom:10px;">
-                  <div style="font-weight:700; color:#1e293b; font-size: 16.5px;">一、變更規模相較以下情境達50%以上者：</div>
-                  <ul style="margin:6px 0 0 24px; padding:0; color:#334155; font-size: 15px; line-height: 1.65;">
-                    ${subList.join('')}
-                  </ul>
-                </div>
-              `);
-            }
-          } else if (!mainCb) {
-            const cb = item.querySelector('input[type="checkbox"]');
-            if (cb && cb.checked) {
-              items.push(`<div style="font-weight:600; color:#1e293b; margin-bottom:8px; font-size: 15.5px;">✔ ${item.textContent.trim()}</div>`);
-            }
+        const selected = [...document.querySelectorAll('#scaleItemsChange .scale-change-item input[type="checkbox"]:checked')];
+        const measureRows = [];
+        let otherRow = '';
+        for (const checkbox of selected) {
+          const item = checkbox.closest('.scale-change-item');
+          const unit = item.dataset.unit;
+          const read = (key, suffix = '') => {
+            const value = item.querySelector(`[data-change-field="${key}"]`)?.value.trim();
+            return value ? portalEscape(value) + suffix : '未填寫';
+          };
+          const label = portalEscape(checkbox.value);
+          if (unit) {
+            measureRows.push(`<li class="scale-change-summary">
+              <strong>${label}</strong>
+              <div>變更前：${read('before', ' ' + unit)}　變更後：${read('after', ' ' + unit)}　變更百分比：${read('percent', '%')}</div>
+              <div class="scale-change-note">變更原因：${read('reason')}</div>
+            </li>`);
+          } else {
+            otherRow = `<div class="scale-change-summary"><strong>${label}</strong>
+              <div class="scale-change-note">變更說明：${read('reason')}</div></div>`;
           }
-        });
-        selectedHtml = items.length > 0 ? items.join('') : '<span style="color:#64748b; font-size: 15px;">未勾選重大變更項目</span>';
+        }
+        const measures = measureRows.length ? `<div><strong>${scaleMajorCategory}</strong><ul>${measureRows.join('')}</ul></div>` : '';
+        selectedHtml = measures + otherRow || '<span style="color:#64748b; font-size: 15px;">未勾選重大變更項目</span>';
       }
 
       itemsContainer.innerHTML = `
@@ -287,7 +316,7 @@
     }
 
     function submitScaleFlow() {
-      alert('此為一定規模作業通報的展示流程，尚未接入案件儲存及主管機關通報服務。資料尚未送出；本畫面會保留，請勿視為已完成通報。');
+      alert(`此為${scaleReportTitle}的展示流程，尚未接入案件儲存及主管機關通報服務。請在本畫面確認資料。`);
     }
 
     function populateScaleCaseData(data) {
@@ -361,22 +390,20 @@
       currentScaleStep = 1;
 
       let caseData = null;
-      let dialogTitle = '新增一定規模作業線上通報';
+      let dialogTitle = `新增${scaleReportTitle}`;
       let dialogMsg = '※ 依工程安全設計及統合管理辦法第三條及第十九條規定通報工程';
-      let submitBtnText = '✔ 確認完成通報並送出';
 
       if (currentScaleMode === 'edit') {
         caseData = getHazardCaseData(caseParam);
         currentScaleCaseNo = caseData.caseNo;
-        dialogTitle = `編輯一定規模作業線上通報 <span style="font-size: 12px; color:#2563eb; font-weight:normal;">(案件編號: ${caseData.caseNo})</span>`;
+        dialogTitle = `編輯${scaleReportTitle} <span style="font-size: 12px; color:#2563eb; font-weight:normal;">(案件編號: ${caseData.caseNo})</span>`;
         dialogMsg = '※ 編輯修改已備查/審核中之一定規模營造工程通報資料與施工期程';
-        submitBtnText = '✔ 確認儲存變更';
       } else {
         currentScaleCaseNo = '';
       }
 
       const bodyHtml = `
-        <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="scale-report-flow" style="display:flex; flex-direction:column; gap:16px;">
           <!-- 三階段進度條 -->
           <div class="flow-steps">
             <div class="flow-step active" id="scaleStep1Indicator">
@@ -386,7 +413,7 @@
               <span class="step-num">2</span>第二步：選擇通報作業
             </div>
             <div class="flow-step" id="scaleStep3Indicator">
-              <span class="step-num">3</span>第三步：資料確認送出
+              <span class="step-num">3</span>第三步：確認通報資料
             </div>
           </div>
 
@@ -406,12 +433,12 @@
               </h4>
               <div style="display:flex; flex-direction:column; gap:14px;">
                 <div class="form-field-group">
-                  <label>事業單位名稱 <span class="form-req">*</span></label>
-                  <input type="text" class="search-input" id="scaleNotifierCompany" value="大安建設股份有限公司" placeholder="請輸入通報者事業單位名稱" required>
+                  <label for="scaleNotifierCompany">工程業主（代表）名稱 <span class="form-req">*</span></label>
+                  <input type="text" class="search-input" id="scaleNotifierCompany" value="大安建設股份有限公司" placeholder="請輸入工程業主（代表）名稱" required>
                 </div>
                 <div class="form-field-group">
-                  <label>行動電話 <span style="font-size: 12px; font-weight:normal; color:#64748b;">(選填)</span></label>
-                  <input type="tel" class="search-input" id="scaleNotifierPhone" value="0911-223-344" placeholder="請輸入行動電話">
+                  <label for="scaleNotifierPhone">連絡方式 <span style="font-size: 12px; font-weight:normal; color:#64748b;">(選填)</span></label>
+                  <input type="text" class="search-input" id="scaleNotifierPhone" value="0911-223-344" placeholder="請輸入連絡方式">
                 </div>
                 <div class="form-field-group">
                   <label>通報關係 <span class="form-req">*</span></label>
@@ -613,7 +640,7 @@
            * ========================================================= -->
           <div id="scaleStep2Pane" class="step-pane">
             <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:12px 16px; border-radius:6px; color:#1e40af; font-size: 13px; line-height:1.6;">
-              <strong>📋 步驟二說明：</strong> 請輸入工程名稱、建照字號、選擇通報種類（新增／重大變更），設定預定開始日，並勾選符合之一定規模通報項目。
+              <strong>📋 步驟二說明：</strong> 請填寫工程資訊，選擇開工或重大變更，並勾選適用的通報項目。
             </div>
 
             <!-- 工程基本資訊 (對照 index.html: ce-project-name, ce-building-permit, ce-report-kind) -->
@@ -638,7 +665,7 @@
                 <div class="form-field-group">
                   <label>通報種類 <span class="form-req">*</span></label>
                   <select class="search-input" id="scaleReportKind" onchange="toggleScaleCivilItems()">
-                    <option value="new" selected>新增</option>
+                    <option value="new" selected>開工</option>
                     <option value="major">重大變更</option>
                   </select>
                 </div>
@@ -647,6 +674,10 @@
                 <div class="form-field-group">
                   <label>預定開始日 <span class="form-req">*</span></label>
                   <input type="date" class="search-input" id="scaleStartDate" value="2026-09-25" style="max-width:240px; font-size:14px; padding: 6px 10px;" required>
+                </div>
+                <div id="scaleMajorInfo" class="scale-change-values" hidden>
+                  <label for="scaleMajorNumber">重大變更次數<input id="scaleMajorNumber" class="search-input" type="number" min="1" step="1"></label>
+                  <label for="scaleMajorDate">重大變更日期<input id="scaleMajorDate" class="search-input" type="date"></label>
                 </div>
               </div>
             </div>
@@ -685,38 +716,18 @@
 
               <!-- 通報種類 = 重大變更 (#scaleItemsChange) -->
               <div class="checkbox-group" id="scaleItemsChange" style="display:none;">
-                <!-- 一、變更規模相較以下情境達50%以上者： -->
                 <div class="checkbox-item">
                   <label class="main-category-label">
-                    <input type="checkbox" onchange="toggleScaleSubItems(this)" checked> 一、變更規模相較以下情境達50%以上者：
+                    <input type="checkbox" onchange="toggleScaleSubItems(this)" checked> ${scaleMajorCategory}
                   </label>
                   <div class="sub-items-container active" style="display:flex; flex-direction:column; gap:10px;">
-                    <div>
-                      <label><input type="checkbox" data-reason="工程金額" onchange="toggleScaleReasonBox(this)"> 工程金額</label>
-                      <textarea class="form-control scale-reason-textarea" data-for="工程金額" maxlength="500" rows="2" placeholder="請說明變更原因（500字以內）" style="display:none; width:100%; margin-top:6px; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:4px; padding: 6px 10px; font-size: 13px;"></textarea>
-                    </div>
-                    <div>
-                      <label><input type="checkbox" data-reason="建築高度" onchange="toggleScaleReasonBox(this)"> 建築高度</label>
-                      <textarea class="form-control scale-reason-textarea" data-for="建築高度" maxlength="500" rows="2" placeholder="請說明變更原因（500字以內）" style="display:none; width:100%; margin-top:6px; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:4px; padding: 6px 10px; font-size: 13px;"></textarea>
-                    </div>
-                    <div>
-                      <label><input type="checkbox" data-reason="開挖深度" onchange="toggleScaleReasonBox(this)"> 開挖深度</label>
-                      <textarea class="form-control scale-reason-textarea" data-for="開挖深度" maxlength="500" rows="2" placeholder="請說明變更原因（500字以內）" style="display:none; width:100%; margin-top:6px; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:4px; padding: 6px 10px; font-size: 13px;"></textarea>
-                    </div>
-                    <div>
-                      <label><input type="checkbox" data-reason="基地面積" onchange="toggleScaleReasonBox(this)"> 基地面積</label>
-                      <textarea class="form-control scale-reason-textarea" data-for="基地面積" maxlength="500" rows="2" placeholder="請說明變更原因（500字以內）" style="display:none; width:100%; margin-top:6px; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:4px; padding: 6px 10px; font-size: 13px;"></textarea>
-                    </div>
-                    <div>
-                      <label><input type="checkbox" data-reason="橋梁或隧道長度" onchange="toggleScaleReasonBox(this)"> 橋梁或隧道長度</label>
-                      <textarea class="form-control scale-reason-textarea" data-for="橋梁或隧道長度" maxlength="500" rows="2" placeholder="請說明變更原因（500字以內）" style="display:none; width:100%; margin-top:6px; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:4px; padding: 6px 10px; font-size: 13px;"></textarea>
-                    </div>
+                    ${scaleMajorMeasures.map(measure => renderScaleChangeItem(...measure)).join('')}
                   </div>
                 </div>
 
                 <!-- 二、其他經中央主管機關指定公告之工程變更 -->
                 <div class="checkbox-item">
-                  <label><input type="checkbox" value="其他經中央主管機關指定公告之工程變更"> 二、其他經中央主管機關指定公告之工程變更</label>
+                  ${renderScaleChangeItem('other', '二、其他經中央主管機關指定公告之工程變更')}
                 </div>
               </div>
             </div>
@@ -737,7 +748,7 @@
            * ========================================================= -->
           <div id="scaleStep3Pane" class="step-pane">
             <div style="background:#fef3c7; border:1px solid #fde68a; padding:14px 18px; border-radius:6px; color:#92400e; font-size: 15px; line-height:1.65;">
-              <strong>⚠️ 步驟三確認：</strong> 請核對以下一定規模營造工程通報資料，確認無誤後點擊送出按鈕，主管勞檢機構將即時列管受理。
+              <strong>步驟三確認：</strong> 請核對下方通報資料。本展示版僅提供填寫與確認預覽，正式通報由主管機關服務受理。
             </div>
 
             <!-- 基本資料彙整呈現容器 -->
@@ -764,7 +775,7 @@
                 ⬅ 上一步：修改通報項目
               </button>
               <button type="button" class="btn-add" style="background:#16a34a; color:#ffffff; padding:11px 32px; font-size: 16px; font-weight:700;" onclick="submitScaleFlow()">
-                ${submitBtnText}
+                確認展示資料
               </button>
             </div>
           </div>
@@ -789,7 +800,7 @@
     window.openScaleCaseDialog = openScaleCaseDialog;
     window.switchScaleStep = switchScaleStep;
     window.toggleScaleCivilItems = toggleScaleCivilItems;
-    window.toggleScaleReasonBox = toggleScaleReasonBox;
+    window.toggleScaleChangeDetails = toggleScaleChangeDetails;
     window.toggleScaleSubItems = toggleScaleSubItems;
     window.addScaleExtraPoint = addScaleExtraPoint;
     window.generateScaleFinalSummary = generateScaleFinalSummary;
