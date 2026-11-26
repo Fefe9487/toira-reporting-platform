@@ -140,6 +140,46 @@
     .scale-change-note {
       white-space: pre-wrap;
     }
+    .scale-report-flow .scale-form-choice,
+    .scale-report-flow .scale-contractor-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .scale-contractor-control .search-input {
+      flex: 1;
+      min-width: 0;
+    }
+    .scale-add-contractor {
+      width: 36px;
+      height: 36px;
+      flex: none;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: #1e293b;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    #scaleContractorRows:not(:empty) {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .scale-site-history {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-left: 3px solid #93c5fd;
+      background: #fff;
+      color: #334155;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+    .scale-site-history ul {
+      margin: 4px 0 0;
+      padding-inline-start: 20px;
+    }
     @media (max-width: 600px) {
       .v-dialog-card:has(.scale-report-flow) .v-dialog-title {
         display: block;
