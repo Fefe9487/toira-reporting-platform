@@ -28,9 +28,8 @@ function buildHazardReportDocument(data, version = 1) {
     section('notifier', '通報者資訊', 1, [
       field('notifierCompany', scale ? '工程業主（代表）名稱' : '事業單位名稱', data.notifierCompany, true),
       field('notifierName', '通報人（職稱）', data.notifierName),
-      field('notifierPhone', scale ? '連絡方式' : '聯絡電話', data.notifierPhone),
-      scale ? field('scaleScope', '一定規模以上之工程', isScaleLargeProject(data) ? '兩億以上規模工程' : '未勾選') :
-        field('relation', '是否交付承攬', data.relation === '交付承攬' ? '是' : '否')
+      field('notifierPhone', scale ? '聯絡方式' : '聯絡電話', data.notifierPhone),
+      ...(scale ? [] : [field('relation', '是否交付承攬', data.relation === '交付承攬' ? '是' : '否')])
     ]),
     section('operator', scale ? '施工者及承攬商' : '作業者資訊', 1, [
       field('contractorUnit', scale ? '施工者名稱' : '實際作業者事業單位', data.contractorUnit, true),

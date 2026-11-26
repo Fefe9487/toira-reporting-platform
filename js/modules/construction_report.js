@@ -19,13 +19,6 @@
     ];
     const scaleValue = id => document.getElementById(id)?.value.trim() || '';
 
-    function isScaleLargeProject(data) {
-      return data.isAtLeast200Million ?? data.scaleItems?.some(item => [
-        '工程造價達新台幣兩億元以上',
-        '預算金額或契約價金達2億元以上且非為新建建築物工程者'
-      ].includes(item)) ?? false;
-    }
-
     function getScaleSiteHistory(siteAddress, draft) {
       const addressKey = value => (value || '').normalize('NFKC').replace(/\s/g, '');
       const key = addressKey(siteAddress);
@@ -150,7 +143,10 @@
       else if (!scaleValue('scalePrimaryUnit')) alert('請輸入施工者名稱！');
       else if (!scaleValue('scaleContact') || !scaleValue('scalePhone')) alert('請輸入現場聯絡人姓名與聯絡電話！');
       else if (!scaleValue('scaleNotifierCompany')) alert('請輸入工程業主（代表）名稱！');
-      else return true;
+      else if (!scaleValue('scaleNotifierPhone')) {
+        alert('請輸入聯絡方式！');
+        document.getElementById('scaleNotifierPhone').focus();
+      } else return true;
       return false;
     }
 
@@ -245,7 +241,6 @@
         adminOffice: scaleValue('scaleAdminUnit'),
         notifierCompany: scaleValue('scaleNotifierCompany'),
         notifierPhone: scaleValue('scaleNotifierPhone'),
-        isAtLeast200Million: document.getElementById('scaleLargeProject').checked,
         contractorUnit: scaleValue('scalePrimaryUnit'),
         contractorTaxId: scaleValue('scaleTaxId'),
         contractors: [...document.querySelectorAll('#scaleContractorRows .contractor-input')].map(input => input.value.trim()).filter(Boolean),
@@ -291,9 +286,8 @@
           <div><strong>承攬商：</strong> ${esc(data.contractors.join('、') || '未填寫')}</div>
           <div><strong>現場聯絡人：</strong> ${esc(contact)}（電話：${esc(phone)}）</div>
           <div><strong>現場作業人數：</strong> ${workers ? `約 ${esc(workers)} 人` : '未填寫'}</div>
-          <div><strong>一定規模以上之工程：</strong> ${data.isAtLeast200Million ? '兩億以上規模工程' : '未勾選'}</div>
           <div style="grid-column:span 2; border-top:1px dashed #cbd5e1; padding-top:10px; margin-top:6px;">
-            <strong>工程業主（代表）名稱：</strong> ${esc(data.notifierCompany)}（連絡方式：${esc(data.notifierPhone || '未填寫')}）
+            <strong>工程業主（代表）名稱：</strong> ${esc(data.notifierCompany)}（聯絡方式：${esc(data.notifierPhone)}）
           </div>
         </div>
       `;
@@ -414,7 +408,6 @@
         scaleStartDate: data.startDate, scaleMajorDate: data.majorDate
       };
       for (const [id, value] of Object.entries(fields)) document.getElementById(id).value = value ?? '';
-      document.getElementById('scaleLargeProject').checked = isScaleLargeProject(data);
       for (const contractor of data.contractors || []) addContractorUnit(contractor, 'scaleContractorRows');
       for (const point of extraLocations) {
         const row = addScaleExtraPoint();
@@ -504,14 +497,8 @@
                   <input type="text" class="search-input" id="scaleNotifierCompany" value="大安建設股份有限公司" placeholder="請輸入工程業主（代表）名稱" required>
                 </div>
                 <div class="form-field-group">
-                  <label for="scaleNotifierPhone">連絡方式 <span style="font-size: 12px; font-weight:normal; color:#64748b;">(選填)</span></label>
-                  <input type="text" class="search-input" id="scaleNotifierPhone" value="0911-223-344" placeholder="請輸入連絡方式">
-                </div>
-                <div class="form-field-group">
-                  <label id="scaleLargeProjectLabel">一定規模以上之工程</label>
-                  <div role="group" aria-labelledby="scaleLargeProjectLabel">
-                    <label class="scale-form-choice"><input type="checkbox" id="scaleLargeProject"> 兩億以上規模工程</label>
-                  </div>
+                  <label for="scaleNotifierPhone">聯絡方式 <span class="form-req">*</span></label>
+                  <input type="text" class="search-input" id="scaleNotifierPhone" value="0911-223-344" placeholder="請輸入聯絡方式" required>
                 </div>
               </div>
             </div>

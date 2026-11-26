@@ -252,11 +252,23 @@ test('重大變更依基地地號與發生日計次，同日依儲存順序，�
   assert.equal(ctx.getScaleChangeNumber({...undated}), null);
 });
 
-test('營造通報詳細資料顯示範圍、承攬商及補登後的重大變更次數', () => {
+test('工程通報要求聯絡方式，並接受一般文字', () => {
+  const {ctx, element, alerts} = session();
+  for (const id of ['scaleCitySelect','scaleEngineeringAddress','scalePrimaryUnit','scaleContact','scalePhone','scaleNotifierCompany']) {
+    element(id).value = '測試';
+  }
+  element('scaleNotifierPhone').value = '   ';
+  assert.equal(ctx.validateScalePeople(), false);
+  assert.match(alerts.at(-1), /請輸入聯絡方式/);
+  element('scaleNotifierPhone').value = 'notice@example.test';
+  assert.equal(ctx.validateScalePeople(), true);
+});
+
+test('工程通報詳情顯示聯絡方式、承攬商及補登後的重大變更次數', () => {
   const {ctx} = session();
   const later = {
     caseNo:'SC-later', caseType:'scale', reportKind:'major', siteAddress:'測試基地', majorDate:'2026-11-18',
-    isAtLeast200Million:true, contractorUnit:'施工公司', contractorTaxId:'12345678', contractors:['甲承攬商', '乙承攬商'],
+    isAtLeast200Million:true, notifierPhone:'notice@example.test', contractorUnit:'施工公司', contractorTaxId:'12345678', contractors:['甲承攬商', '乙承攬商'],
     scaleChangeDetails:[{id:'scale-change-amount',label:'工程金額',unit:'新臺幣元',before:'200000000',after:'300000000',percent:'50'}]
   };
   ctx.DEMO_HAZARD_CASES[later.caseNo] = later;
@@ -268,7 +280,8 @@ test('營造通報詳細資料顯示範圍、承攬商及補登後的重大變�
   const snapshot = notice();
   assert.match(snapshot.filename, /工程通報資料/);
   const html = ctx.renderHazardReportDocument(snapshot.document);
-  for (const text of ['兩億以上規模工程','甲承攬商','乙承攬商','施工者統一編號','300000000','50 %']) assert.ok(html.includes(text), text);
+  for (const text of ['聯絡方式','notice@example.test','甲承攬商','乙承攬商','施工者統一編號','300000000','50 %']) assert.ok(html.includes(text), text);
+  assert.doesNotMatch(html, /兩億以上規模工程/);
 });
 
 console.log(`TOTAL: ${results.length} passed checks`);
