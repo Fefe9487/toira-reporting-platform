@@ -6,17 +6,20 @@
     const { completionNotice, completionNoticeHistory, ...report } = data;
     const version = previousVersion + 1;
     const catalog = inspectionCaseCatalog.find(row => row.id === data.caseNo);
+    const reportDocument = buildHazardReportDocument(report, version);
     return {
       version,
       recipient: data.email?.trim() || '',
       submittedAt: data.submittedAt || data.reportDate || catalog?.submitDate || '未提供',
-      filename: getHazardReportFilename(data.caseNo, version),
-      document: buildHazardReportDocument(report, version),
+      filename: reportDocument.mailFiles[0].filename,
+      document: reportDocument,
       report: JSON.parse(JSON.stringify(report))
     };
   }
 
   function ensureHazardCompletionNotice(data) {
+    // Construction demo details reflect changes that can be re-ordered by occurrence date.
+    if (data.caseType === 'scale') return createHazardCompletionNotice(data);
     // 已存在案件沒有原始郵件附件；首次檢視只建立展示快照，不宣稱是原寄送檔案。
     if (!data.completionNotice) data.completionNotice = createHazardCompletionNotice(data);
     const notice = data.completionNotice;

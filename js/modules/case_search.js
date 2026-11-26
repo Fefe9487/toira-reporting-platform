@@ -176,7 +176,7 @@
       const isInspectionOrAdmin = isInspection || isAdmin;
 
       // 頂部按鈕列：
-      // - 事業單位: [新增危險作業通報, 新增一定規模作業通報]
+      // - 事業單位可新增危險作業通報或一定規模以上工程通報
       // - 勞檢機構: [批次標記已閱讀] 與自動彙總
       // - 管理者:   自動彙總，無批次審核按鈕
       let topButtonsHtml = '';
@@ -190,7 +190,7 @@
               </button>
               <button class="btn-add" style="background-color:#0288d1;" onclick="openScaleCaseDialog()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                新增一定規模作業通報
+                新增一定規模以上工程開工或重大變更通報
               </button>
             </div>
           </div>

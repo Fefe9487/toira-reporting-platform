@@ -1,6 +1,7 @@
 /* One report document for final review, case viewing and the notification PDF. */
-function getHazardReportFilename(caseNo, version = 1) {
-  return `${caseNo || '待編號'}_危險作業通報資料_第${version}版_展示.pdf`;
+function getHazardReportFilename(caseNo, version = 1, scale = false) {
+  const label = scale ? '一定規模以上工程通報資料' : '危險作業通報資料';
+  return `${caseNo || '待編號'}_${label}_第${version}版_展示.pdf`;
 }
 
 function buildHazardReportDocument(data, version = 1) {
@@ -13,27 +14,28 @@ function buildHazardReportDocument(data, version = 1) {
   const risk = data.riskAssessment || {};
   const scale = data.caseType === 'scale' || Array.isArray(data.scaleItems);
   const riskFiles = Array.isArray(risk.files) ? risk.files : (data.riskFiles || []);
-  const filename = getHazardReportFilename(data.caseNo, version);
+  const filename = getHazardReportFilename(data.caseNo, version, scale);
   const confirmed = value => value === true ? '已確認' : value === false ? '尚未確認' : '原案件未記錄';
   const sections = [
     section('overview', '作業概況', 2, [
       field('workName', '作業名稱', data.workName, true),
-      field('caseType', '通報類型', scale ? '一定規模以上營造業通報' : '危險作業通報'),
+      field('caseType', '通報類型', scale ? '一定規模以上工程開工或重大變更通報' : '危險作業通報'),
       field('workPeriod', '預期作業期間', `${text(data.startDate)} ～ ${text(data.endDate)}`),
-      field('region', '作業縣市／鄉鎮市區', [data.city, data.dist].filter(Boolean).join(' ')),
+      field('region', scale ? '工程所在地（縣市／鄉鎮市區）' : '作業縣市／鄉鎮市區', [data.city, data.dist].filter(Boolean).join(' ')),
       field('adminOffice', '所屬勞動檢查單位', data.adminOffice),
       field('industrialPark', '產業園區', text(data.industrialPark, '否'), true)
     ]),
     section('notifier', '通報者資訊', 1, [
-      field('notifierCompany', '事業單位名稱', data.notifierCompany, true),
+      field('notifierCompany', scale ? '工程業主（代表）名稱' : '事業單位名稱', data.notifierCompany, true),
       field('notifierName', '通報人（職稱）', data.notifierName),
-      field('notifierPhone', '聯絡電話', data.notifierPhone),
-      field('relation', '是否交付承攬', data.relation === '交付承攬' ? '是' : '否')
+      field('notifierPhone', scale ? '連絡方式' : '聯絡電話', data.notifierPhone),
+      scale ? field('scaleScope', '一定規模以上之工程', isScaleLargeProject(data) ? '兩億以上規模工程' : '未勾選') :
+        field('relation', '是否交付承攬', data.relation === '交付承攬' ? '是' : '否')
     ]),
-    section('operator', '作業者資訊', 1, [
-      field('contractorUnit', '實際作業者事業單位', data.contractorUnit, true),
-      items('contractors', '承攬商', data.relation === '交付承攬' ? data.contractors : [], '無承攬商（作業單位自辦）'),
-      field('contractorTaxId', '統一編號', text(data.contractorTaxId, '無統編／自營')),
+    section('operator', scale ? '施工者及承攬商' : '作業者資訊', 1, [
+      field('contractorUnit', scale ? '施工者名稱' : '實際作業者事業單位', data.contractorUnit, true),
+      items('contractors', '承攬商', scale || data.relation === '交付承攬' ? data.contractors : [], scale ? '未填寫' : '無承攬商（作業單位自辦）'),
+      field('contractorTaxId', scale ? '施工者統一編號' : '統一編號', text(data.contractorTaxId, scale ? '未填寫' : '無統編／自營')),
       field('contact', '工作場所負責人', main.contact),
       field('phone', '聯絡電話', main.phone),
       field('workers', '作業人數', main.workers ? `${main.workers} 人` : '未提供'),
@@ -41,11 +43,26 @@ function buildHazardReportDocument(data, version = 1) {
     ])
   ];
   sections[0].editActions = [{step:2,label:'修改名稱／期間'},{step:1,label:'修改地區／管轄'}];
-  if (scale) sections.push(section('construction', '營造工程資訊', 1, [
-    field('reportKind', '通報種類', data.reportKind === 'major' ? '重大變更' : '新增通報'),
-    field('buildingPermit', '建造執照', data.buildingPermit),
-    field('siteAddress', '工程地號／地址', data.siteAddress, true)
-  ]));
+  if (scale) {
+    const constructionFields = [
+      field('reportKind', '通報種類', data.reportKind === 'major' ? '重大變更' : '開工'),
+      field('buildingPermit', '建造執照', data.buildingPermit),
+      field('siteAddress', '基地地號／地址', data.siteAddress, true)
+    ];
+    if (data.reportKind === 'major') {
+      const number = getScaleChangeNumber(data);
+      constructionFields.push(
+        field('majorDate', '變更發生日', data.majorDate),
+        field('majorNumber', '重大變更次數', number ? `第 ${number} 次` : '未計算')
+      );
+      for (const item of data.scaleChangeDetails || []) {
+        const measure = (value, unit) => value ? `${value} ${unit}` : '未填寫';
+        const details = item.unit ? `變更前：${measure(item.before, item.unit)}　變更後：${measure(item.after, item.unit)}　變更百分比：${measure(item.percent, '%')}　變更原因：` : '變更說明：';
+        constructionFields.push(field(item.id, item.label, details + (item.reason || '未填寫'), true));
+      }
+    }
+    sections.push(section('construction', '營造工程資訊', 1, constructionFields));
+  }
   const locations = data.locations?.length ? data.locations : [{}];
   const locationFields = locations.flatMap((location, index) => {
     const prefix = index ? `附加點位 ${index}` : '主要作業地點';
@@ -61,8 +78,8 @@ function buildHazardReportDocument(data, version = 1) {
     return fields;
   });
   sections.push(section('locations', '作業位置', 1, locationFields));
-  sections.push(section('work-items', '危險作業項目', 2, [
-    items('categories', '危害類別', data.categories, '未提供'),
+  sections.push(section('work-items', scale ? '工程通報項目' : '危險作業項目', 2, [
+    ...(scale ? [] : [items('categories', '危害類別', data.categories, '未提供')]),
     items('subItems', '完整通報項目', scale ? data.scaleItems : data.subItems, '未提供通報項目')
   ]));
   const riskFields = [
