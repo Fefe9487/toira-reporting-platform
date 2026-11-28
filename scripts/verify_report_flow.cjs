@@ -18,7 +18,7 @@ function session() {
     alert:message=>alerts.push(message),confirm:()=>true,setTimeout(){},openHhCalendarPopup(){},clearHhDateRange(){},closeHhDateRangePicker(){},
     closeVDialog(){},renderView(){},openVDialog:options=>dialogs.push(options),renderPortalOfficeLinks(){},getPortalLinks:()=>({toiraUrl:'https://example.test/toira'}),
     HH_ATTACHMENT_MAX_MB:15,HH_ATTACHMENT_MAX_BYTES:15*1048576,hhInclusiveDayCount:()=>5,
-    HH_TOIRA_WORK_CATALOG:{operations:{},tasks:{}},portalEscape:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))});
+    roleMenuData:{},HH_TOIRA_WORK_CATALOG:{operations:{},tasks:{}},portalEscape:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))});
   for (const file of ['js/modules/report_document.js','js/modules/case_search.js','js/modules/dangerous_report.js','js/modules/risk_assessment.js','js/modules/case_completion.js','js/modules/construction_report.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
   Object.assign(ctx,ctx.window);
   const run = code=>vm.runInContext(code,ctx);
@@ -44,22 +44,42 @@ test('單筆取消同步更新清單與詳情，並停用重寄',()=>{
 
 test('管理者不能取消；勞檢須先閱讀；重複標讀不覆寫首次閱讀時間',()=>{
   const s=session();
+  const record=s.ctx.DEMO_HAZARD_CASES[known];
   s.ctx.window.currentRole='admin';
   assert.equal(s.ctx.cancelHazardCase(known),false);
+  assert.equal(s.ctx.markInspectionCaseRead(known),false);
   s.ctx.window.currentRole='inspection';
   assert.equal(s.ctx.cancelHazardCase(known),false);
+  s.ctx.openHazardCaseDetail(known);
+  assert.match(s.dialogs.at(-1).bodyHtml,/未備查/);
+  assert.match(s.dialogs.at(-1).bodyHtml,/確認已讀/);
+  assert.equal(record.status,'待確認');
+  assert.equal(record.readAt,undefined);
   assert.equal(s.ctx.markInspectionCaseRead(known),true);
   const readAt=s.ctx.DEMO_HAZARD_CASES[known].readAt;
   s.ctx.applyInspectionCaseStatus([known],'已備查');
   assert.equal(s.ctx.DEMO_HAZARD_CASES[known].readAt,readAt);
   assert.equal(s.ctx.inspectionCaseCatalog.find(row=>row.id===known).readAt,readAt);
   assert.equal(s.ctx.cancelHazardCase(known),true);
+  assert.equal(record.status,'取消');
+  assert.equal(record.readAt,null);
+  s.ctx.openHazardCaseDetail(known);
+  assert.match(s.dialogs.at(-1).bodyHtml,/取消<\/span><span class="report-case-status pending">未備查/);
+  assert.equal(record.readAt,null);
+  assert.equal(s.ctx.markInspectionCaseRead(known),true);
+  assert.equal(record.status,'取消');
+  assert.ok(record.readAt);
+  assert.equal(s.ctx.markInspectionCaseRead(known),false);
+  assert.match(s.ctx.getHazardCompletionActionsHtml(record),/disabled/);
 });
 
 test('編輯保留各次通知快照，且快照不遞迴夾帶歷史紀錄',()=>{
   const s=session();
   for (const name of ['validateHhWorkInfo','validateHhWorkSelection','validateHhRiskAssessment','validateHhNotificationEmail']) s.ctx[name]=()=>true;
   const first=s.ctx.ensureHazardCompletionNotice(s.ctx.DEMO_HAZARD_CASES[known]);
+  s.ctx.window.currentRole='inspection';
+  assert.equal(s.ctx.markInspectionCaseRead(known),true);
+  s.ctx.window.currentRole='company';
   const originalName=first.document.title;
   let name='第二版作業';
   s.ctx.collectHhReportData=()=>({...plain(s.ctx.DEMO_HAZARD_CASES[known]),workName:name});
@@ -68,6 +88,11 @@ test('編輯保留各次通知快照，且快照不遞迴夾帶歷史紀錄',()=
   name='第三版作業';
   s.ctx.submitHazardFlow();
   const saved=s.ctx.DEMO_HAZARD_CASES[known];
+  assert.equal(saved.status,'待確認');
+  assert.equal(saved.readAt,null);
+  const row=s.ctx.inspectionCaseCatalog.find(item=>item.id===known);
+  assert.equal(row.status,'待確認');
+  assert.equal(row.readAt,null);
   assert.equal(saved.completionNotice.version,3);
   assert.deepEqual(plain(saved.completionNoticeHistory.map(notice=>notice.version)),[1,2]);
   assert.equal(saved.completionNoticeHistory[0].document.title,originalName);
@@ -262,6 +287,31 @@ test('工程通報要求聯絡方式，並接受一般文字', () => {
   assert.match(alerts.at(-1), /請輸入聯絡方式/);
   element('scaleNotifierPhone').value = 'notice@example.test';
   assert.equal(ctx.validateScalePeople(), true);
+});
+
+test('工程通報更新後回到未備查', () => {
+  const s = session();
+  const {ctx} = s;
+  const caseNo = 'SC-115-09005';
+  const original = ctx.DEMO_HAZARD_CASES[caseNo];
+  ctx.window.currentRole = 'inspection';
+  assert.equal(ctx.markInspectionCaseRead(caseNo), true);
+  ctx.window.currentRole = 'company';
+  ctx.validateScalePeople = () => true;
+  ctx.validateScaleProject = () => true;
+  ctx.collectScaleReportData = () => ({
+    ...plain(original),
+    startDate: '2026-11-30',
+  });
+  s.run("currentScaleMode = 'edit'; currentScaleCaseNo = 'SC-115-09005'; currentScaleStep = 3;");
+  ctx.submitScaleFlow();
+  const updated = ctx.DEMO_HAZARD_CASES[caseNo];
+  const row = ctx.inspectionCaseCatalog.find(item => item.id === caseNo);
+  assert.equal(updated.startDate, '2026-11-30');
+  assert.equal(updated.status, '待確認');
+  assert.equal(updated.readAt, null);
+  assert.equal(row.status, '待確認');
+  assert.equal(row.readAt, null);
 });
 
 test('工程通報詳情顯示聯絡方式、承攬商及補登後的重大變更次數', () => {
