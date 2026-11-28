@@ -362,11 +362,11 @@
       if (!validateScaleProject()) { switchScaleStep(2); return; }
       const data = collectScaleReportData();
       const caseNo = currentScaleCaseNo || createHazardCaseNumber('SC');
-      const status = existing?.status || '待確認';
+      const status = '待確認';
       const now = new Date();
       const catalogRow = inspectionCaseCatalog.find(row => row.id === caseNo);
       const record = {
-        ...existing, ...data, caseNo, status,
+        ...existing, ...data, caseNo, status, readAt: null,
         submittedAt: existing?.submittedAt || catalogRow?.submitDate ||
           now.toLocaleString('zh-TW', {timeZone:'Asia/Taipei',hour12:false})
       };
@@ -375,7 +375,7 @@
       const workRange = [record.startDate, record.endDate].filter(Boolean).map(hhRocDate).join(' ~ ');
       const row = {
         id: caseNo, company: data.notifierCompany, unit: data.contractorUnit, workName: data.workName,
-        region: data.city + data.dist, workRange, status, scale: true,
+        region: data.city + data.dist, workRange, status, readAt: null, scale: true,
         submitDate: catalogRow?.submitDate || hhRocDate(now.toLocaleDateString('sv-SE', {timeZone:'Asia/Taipei'}))
       };
       if (catalogRow) Object.assign(catalogRow, row);
