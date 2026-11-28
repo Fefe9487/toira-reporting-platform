@@ -183,12 +183,12 @@ let currentHhStep = 1;
     // 當前危險作業通報模式 ('add' | 'edit') 與編輯中案件編號
     let currentHazardMode = 'add';
     let currentHazardCaseNo = '';
-    let hhCaseSequence = 0;
-    function createHazardCaseNumber() {
+    const reportCaseSequences = { RW: 0, SC: 0 };
+    function createHazardCaseNumber(prefix = 'RW') {
       const today = new Date().toLocaleDateString('sv-SE', {timeZone:'Asia/Taipei'});
       let candidate;
       do {
-        candidate = 'RW-' + (Number(today.slice(0,4))-1911) + '-D' + Date.now() + String(++hhCaseSequence).padStart(3,'0');
+        candidate = prefix + '-' + (Number(today.slice(0,4))-1911) + '-D' + Date.now() + String(++reportCaseSequences[prefix]).padStart(3,'0');
       } while (Object.prototype.hasOwnProperty.call(DEMO_HAZARD_CASES,candidate) || inspectionCaseCatalog.some(row=>row.id===candidate));
       return candidate;
     }

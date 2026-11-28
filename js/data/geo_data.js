@@ -279,20 +279,21 @@ const HH_ATTACHMENT_MAX_BYTES = HH_ATTACHMENT_MAX_MB * 1048576;
     /**
      * 動態新增承攬廠商列
      */
-    function addContractorUnit(value = '') {
-      const box = document.getElementById('hhContractorRows');
+    function addContractorUnit(value = '', containerId = 'hhContractorRows') {
+      const box = document.getElementById(containerId);
       if (!box) return;
-      const safe = String(value).replace(/"/g, '&quot;');
       const row = document.createElement('div');
       row.className = 'form-field-group hh-contractor-row';
       row.innerHTML = `
         <label>承攬商</label>
         <div style="display:flex; gap:8px; align-items:center;">
-          <input type="text" class="search-input contractor-input" placeholder="請輸入承攬商名稱" value="${safe}" style="flex:1;">
+          <input type="text" class="search-input contractor-input" aria-label="承攬商名稱" placeholder="請輸入承攬商名稱" style="flex:1; min-width:0;">
           <button type="button" title="移除承攬商" onclick="removeContractorRow(this)" style="width:36px; height:36px; flex:none; display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#475569; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-weight:bold; font-size:16px;">－</button>
         </div>
       `;
+      row.querySelector('.contractor-input').value = value;
       box.appendChild(row);
+      return row;
     }
 
     function removeContractorRow(btn) {

@@ -19,7 +19,7 @@ function session() {
     closeVDialog(){},renderView(){},openVDialog:options=>dialogs.push(options),renderPortalOfficeLinks(){},getPortalLinks:()=>({toiraUrl:'https://example.test/toira'}),
     HH_ATTACHMENT_MAX_MB:15,HH_ATTACHMENT_MAX_BYTES:15*1048576,hhInclusiveDayCount:()=>5,
     HH_TOIRA_WORK_CATALOG:{operations:{},tasks:{}},portalEscape:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))});
-  for (const file of ['js/modules/report_document.js','js/modules/case_search.js','js/modules/dangerous_report.js','js/modules/risk_assessment.js','js/modules/case_completion.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
+  for (const file of ['js/modules/report_document.js','js/modules/case_search.js','js/modules/dangerous_report.js','js/modules/risk_assessment.js','js/modules/case_completion.js','js/modules/construction_report.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
   Object.assign(ctx,ctx.window);
   const run = code=>vm.runInContext(code,ctx);
   return {ctx,run,element,selectors,alerts,dialogs};
@@ -224,6 +224,64 @@ test('作業概況的修改按鈕分別連到名稱期間與地區管轄正確�
   assert.deepEqual(actions,[{step:2,label:'修改名稱／期間'},{step:1,label:'修改地區／管轄'}]);
   const html=s.ctx.renderHazardReportDocument(doc,{review:true});
   assert.match(html,/onclick="switchHazardStep\(1\)" aria-label="修改地區／管轄"/);
+});
+
+test('重大變更依基地地號與發生日計次，同日依儲存順序，編輯時不重複計次', () => {
+  const {ctx} = session();
+  const opening = ctx.DEMO_HAZARD_CASES['SC-115-09005'];
+  const address = opening.siteAddress;
+  const major = (caseNo, majorDate, siteAddress = address) => ({
+    caseNo, caseType:'scale', reportKind:'major', siteAddress, majorDate, status:'待確認'
+  });
+  const later = major('SC-later', '2026-11-18');
+  const earlier = major('SC-earlier', '2026-11-03');
+  const sameDay = major('SC-same-day', '2026-11-03');
+  const undated = major('SC-undated', '');
+  const otherSite = major('SC-other-site', '2026-11-01', '不同基地');
+  const cancelled = {...major('SC-cancelled', '2026-11-01'), status:'取消'};
+  for (const report of [later, earlier, sameDay, undated, otherSite, cancelled]) {
+    ctx.DEMO_HAZARD_CASES[report.caseNo] = report;
+  }
+  const addressWithSpacing = address.replace('120', ' １２０ ');
+  const rank = history => plain(history.map(({report, number}) => [report.caseNo, number]));
+  assert.deepEqual(rank(ctx.getScaleSiteHistory(addressWithSpacing)), [
+    [opening.caseNo, null], [earlier.caseNo, 1], [sameDay.caseNo, 2], [later.caseNo, 3], [undated.caseNo, null]
+  ]);
+  assert.equal(ctx.getScaleChangeNumber({...later, majorDate:'2026-11-01'}), 1);
+  assert.equal(ctx.getScaleChangeNumber({...earlier, majorDate:'2026-11-29'}), 3);
+  assert.equal(ctx.getScaleChangeNumber({...undated}), null);
+});
+
+test('工程通報要求聯絡方式，並接受一般文字', () => {
+  const {ctx, element, alerts} = session();
+  for (const id of ['scaleCitySelect','scaleEngineeringAddress','scalePrimaryUnit','scaleContact','scalePhone','scaleNotifierCompany']) {
+    element(id).value = '測試';
+  }
+  element('scaleNotifierPhone').value = '   ';
+  assert.equal(ctx.validateScalePeople(), false);
+  assert.match(alerts.at(-1), /請輸入聯絡方式/);
+  element('scaleNotifierPhone').value = 'notice@example.test';
+  assert.equal(ctx.validateScalePeople(), true);
+});
+
+test('工程通報詳情顯示聯絡方式、承攬商及補登後的重大變更次數', () => {
+  const {ctx} = session();
+  const later = {
+    caseNo:'SC-later', caseType:'scale', reportKind:'major', siteAddress:'測試基地', majorDate:'2026-11-18',
+    isAtLeast200Million:true, notifierPhone:'notice@example.test', contractorUnit:'施工公司', contractorTaxId:'12345678', contractors:['甲承攬商', '乙承攬商'],
+    scaleChangeDetails:[{id:'scale-change-amount',label:'工程金額',unit:'新臺幣元',before:'200000000',after:'300000000',percent:'50'}]
+  };
+  ctx.DEMO_HAZARD_CASES[later.caseNo] = later;
+  const notice = () => ctx.ensureHazardCompletionNotice(later);
+  const construction = () => notice().document.sections.find(section => section.id === 'construction').fields;
+  assert.equal(construction().find(field => field.key === 'majorNumber').value, '第 1 次');
+  ctx.DEMO_HAZARD_CASES['SC-earlier'] = {...later, caseNo:'SC-earlier', majorDate:'2026-11-03'};
+  assert.equal(construction().find(field => field.key === 'majorNumber').value, '第 2 次');
+  const snapshot = notice();
+  assert.match(snapshot.filename, /工程通報資料/);
+  const html = ctx.renderHazardReportDocument(snapshot.document);
+  for (const text of ['聯絡方式','notice@example.test','甲承攬商','乙承攬商','施工者統一編號','300000000','50 %']) assert.ok(html.includes(text), text);
+  assert.doesNotMatch(html, /兩億以上規模工程/);
 });
 
 console.log(`TOTAL: ${results.length} passed checks`);
