@@ -664,7 +664,8 @@ let currentHhStep = 1;
       const today = new Date().toLocaleDateString('sv-SE', {timeZone:'Asia/Taipei'});
       const caseNo = currentHazardCaseNo || createHazardCaseNumber();
       data.caseNo = caseNo;
-      data.status = existing?.status || '待確認';
+      data.status = '待確認';
+      data.readAt = null;
       DEMO_HAZARD_CASES[caseNo] = {...existing,...data};
       const submitted = DEMO_HAZARD_CASES[caseNo];
       submitted.submittedAt = new Date().toLocaleString('zh-TW', {timeZone:'Asia/Taipei',hour12:false});
@@ -673,7 +674,7 @@ let currentHhStep = 1;
       submitted.completionNoticeHistory = history;
       submitted.completionNotice = createHazardCompletionNotice(submitted, existing?.completionNotice?.version || 0);
       const catalogRow = inspectionCaseCatalog.find(row=>row.id === caseNo);
-      const row = {id:caseNo, company:data.notifierCompany, unit:data.contractorUnit, workName:data.workName, region:data.city + data.dist, workRange:hhRocDate(data.startDate) + ' ~ ' + hhRocDate(data.endDate), submitDate:catalogRow?.submitDate || hhRocDate(today), status:data.status, scale:false};
+      const row = {id:caseNo, company:data.notifierCompany, unit:data.contractorUnit, workName:data.workName, region:data.city + data.dist, workRange:hhRocDate(data.startDate) + ' ~ ' + hhRocDate(data.endDate), submitDate:catalogRow?.submitDate || hhRocDate(today), status:data.status, readAt:data.readAt, scale:false};
       if (catalogRow) Object.assign(catalogRow,row);
       else inspectionCaseCatalog.unshift(row);
       const completedTitle = currentHazardMode === 'edit' ? '展示通報資料已更新' : '展示通報已完成';
@@ -1198,18 +1199,15 @@ let currentHhStep = 1;
       if (!data) { alert('找不到此案件，請返回案件列表重新查詢。'); return; }
       if (defaultWorkName && !data.workName) data.workName = defaultWorkName;
       const notice = ensureHazardCompletionNotice(data);
-      if (typeof markInspectionCaseRead === 'function' && markInspectionCaseRead(caseNo)) {
-        data.status = '已備查';
-        if (typeof renderView === 'function' && window.currentActiveKey === 'caseSearch') renderView('caseSearch');
-      }
-      const status = data.status || '待確認';
-      const statusClass = status === '已備查' ? 'read' : status === '取消' ? 'cancelled' : 'pending';
+      const isCancelled = data.status === '取消';
+      const isRead = isCancelled ? Boolean(data.readAt) : data.status === '已備查';
+      const reviewStatus = isRead ? '已備查' : '未備查';
       let inspectionActions = '';
-      if (window.currentRole === 'inspection' && status === '待確認') inspectionActions = `<button class="btn-record" type="button" onclick="applyInspectionCaseStatus(['${portalEscape(caseNo)}'], '已備查'); renderView('caseSearch'); closeVDialog();">閱讀完畢</button>`;
-      if (window.currentRole === 'inspection' && status === '已備查') inspectionActions = `<button class="btn-cancel-case" type="button" data-case-no="${portalEscape(caseNo)}" onclick="cancelHazardCase(this.dataset.caseNo)">取消</button>`;
+      if (window.currentRole === 'inspection' && !isRead) inspectionActions = `<button class="btn-record" type="button" data-case-no="${portalEscape(caseNo)}" onclick="if (markInspectionCaseRead(this.dataset.caseNo)) { closeVDialog(); renderView('caseSearch'); }">確認已讀</button>`;
+      if (window.currentRole === 'inspection' && isRead && !isCancelled) inspectionActions = `<button class="btn-cancel-case" type="button" data-case-no="${portalEscape(caseNo)}" onclick="cancelHazardCase(this.dataset.caseNo)">取消</button>`;
       const doc = notice.document;
       const detailHtml = `<div class="case-detail-container report-detail" data-case-no="${portalEscape(caseNo)}">
-        <div class="report-view-meta"><span>通報時間：${portalEscape(notice.submittedAt)}</span><span class="report-case-status ${statusClass}">${portalEscape(status)}</span></div>
+        <div class="report-view-meta"><span>通報時間：${portalEscape(notice.submittedAt)}</span>${isCancelled ? '<span class="report-case-status cancelled">取消</span>' : ''}<span class="report-case-status ${isRead ? 'read' : 'pending'}">${reviewStatus}</span></div>
         ${renderHazardReportDocument(doc)}
         ${getHazardCompletionPanelHtml(data)}
         <div class="back-btn-box">${inspectionActions}${getHazardCompletionActionsHtml(data)}<button class="btn-back" type="button" onclick="closeVDialog()">關閉</button></div>

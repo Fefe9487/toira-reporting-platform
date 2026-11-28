@@ -30,7 +30,7 @@
         '已備查': 'badge-open',
         '取消': 'badge-cancel'
       }[status] || 'badge-audit';
-      return `<span class="badge-status ${cls}">${escCaseText(status)}</span>`;
+      return `<span class="badge-status ${cls}">${status === '待確認' ? '未備查' : escCaseText(status)}</span>`;
     }
 
     function computeInspectionMergeGroups(cases, mode) {
@@ -114,8 +114,8 @@
       if (window.currentRole !== 'inspection') return false;
       const row = inspectionCaseCatalog.find(item => item.id === caseNo);
       const detail = window.DEMO_HAZARD_CASES && window.DEMO_HAZARD_CASES[caseNo];
-      const status = row ? row.status : detail && detail.status;
-      if (status !== '待確認') return false;
+      const record = detail || row;
+      if (!record || record.status === '已備查' || (record.status === '取消' && record.readAt)) return false;
       applyInspectionCaseStatus([caseNo], '已備查');
       return true;
     }
@@ -128,9 +128,14 @@
         const readAt = row?.readAt || detail?.readAt || now;
         const cancelledAt = row?.cancelledAt || detail?.cancelledAt || now;
         [row,detail].filter(Boolean).forEach(record=>{
-          record.status = status;
-          if (status === '已備查') record.readAt = readAt;
-          if (status === '取消') record.cancelledAt = cancelledAt;
+          if (status === '已備查') {
+            if (record.status !== '取消') record.status = status;
+            record.readAt = readAt;
+          } else if (status === '取消') {
+            record.status = status;
+            record.cancelledAt = cancelledAt;
+            record.readAt = null;
+          }
         });
       });
     }
@@ -142,7 +147,7 @@
       const detail = window.DEMO_HAZARD_CASES?.[caseNo];
       const status = detail?.status || row?.status;
       if (!status || status === '取消') return false;
-      if (role === 'inspection' && status !== '已備查') { alert('請先開啟並閱讀案件資料，再辦理取消。'); return false; }
+      if (role === 'inspection' && status !== '已備查') { alert('請先確認已讀案件資料，再辦理取消。'); return false; }
       if (!confirm('確認取消通報案件【'+caseNo+'】？')) return false;
       applyInspectionCaseStatus([caseNo],'取消');
       if (document.querySelector('.case-detail-container')) closeVDialog();
@@ -304,7 +309,7 @@
         </div>
 
         ${topButtonsHtml}
-        <p style="margin:0 0 12px; color:#64748b; font-size:14px;">待確認：勞檢尚未開啟通報資料。已備查：勞檢已閱讀通報資料。</p>
+        <p style="margin:0 0 12px; color:#64748b; font-size:14px;">未備查表示勞檢尚未確認已讀。開啟詳情可先檢視資料，承辦人可按「確認已讀」完成備查。</p>
 
         <!-- 查詢條件區塊: [作業日起迄, 通報日起迄, 所在地區 (縣市), 作業名稱] -->
         <div class="search-filter-card">
@@ -338,7 +343,7 @@
               <span class="label">案件狀態：</span>
               <select class="v-select" id="caseStatusFilter" style="min-width:125px; padding:7px 12px; font-size: 15px;">
                 <option value="">全部狀態</option>
-                <option value="待確認">待確認</option>
+                <option value="待確認">未備查</option>
                 <option value="已備查">已備查</option>
                 <option value="取消">取消</option>
               </select>
@@ -448,7 +453,7 @@
                   <td>${escCaseText(row.region)}</td>
                   <td>${escCaseText(row.workRange)}</td>
                   <td>${escCaseText(row.submitDate)}</td>
-                  <td class="v-table-center">${caseStatusBadgeHtml(row.status)}</td>
+                  <td class="v-table-center">${caseStatusBadgeHtml(row.status)}${row.status === '取消' ? ' ' + caseStatusBadgeHtml(row.readAt ? '已備查' : '待確認') : ''}</td>
                   <td class="v-table-center" style="white-space:nowrap;">
                     ${actionButtons(row.id, row.status)}
                   </td>

@@ -1,13 +1,13 @@
 {INSPECTION_OFFICE} 您好：
 
-本批新增危險作業通報案件共 {NEW_CASE_COUNT} 件，請登入平台點閱。
+本批新增通報案件共 {NEW_CASE_COUNT} 件，包含適用的危險作業與一定規模以上工程開工及重大變更通報，請登入平台查閱。
 
 統計期間：{WINDOW_START} 至 {WINDOW_END}（臺灣時間）
 統計截止：{CUTOFF_AT}（臺灣時間）
 本批新增：{NEW_CASE_COUNT} 件
 其中今日新增：{TODAY_NEW_CASE_COUNT} 件
 其中跨日補列：{CARRYOVER_CASE_COUNT} 件
-本批尚未點閱：{UNREAD_CASE_COUNT} 件（截至上述時間）
+本批未備查：{UNREAD_CASE_COUNT} 件（截至上述時間）
 
 請登入平台，至「通報案件查詢」查看案件。
 
